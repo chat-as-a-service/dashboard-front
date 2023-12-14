@@ -1,0 +1,6 @@
+<svg width='64' height='64' fill='none' xmlns='http://www.w3.org/2000/svg'>
+    <path fill='#fff' d='M0 0h64v64H0z'/>
+    <path fill='#8012B3' d='M0 0h64v64H0z'/>
+    <path d='M32 30.5a6 6 0 1 1 0-12 6 6 0 0 1 0 12zM32 32.75c6.628 0 12 5.373 12 12v.75H19.995v-.75h.007c0-6.627 5.372-12 12-12z'
+          fill='#fff'/>
+</svg>

@@ -1,0 +1,272 @@
+import React, { useContext, useEffect, useState } from 'react';
+import {
+  Button,
+  Dropdown,
+  Flex,
+  Input,
+  notification,
+  Select,
+  Space,
+  Table,
+  Typography,
+} from 'antd';
+import {
+  DeleteOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
+import { ColumnsType } from 'antd/es/table';
+import { TableRowSelection } from 'antd/es/table/interface';
+import { useNavigate } from 'react-router-dom';
+import { CommonStoreContext } from '../../index';
+import { observer } from 'mobx-react-lite';
+import { Utils } from '../../core/Util';
+import { ChannelListRes } from '../../types/channel';
+import { ChannelRepository } from '../../repository/ChannelRepository';
+import DefaultChannelImg from '../../static/images/default-channel-image-1.png';
+import { AddChannelModal } from '../../components/channel/AddChannelModal';
+import { UserRepository } from '../../repository/UserRepository';
+import { UserListRes } from '../../types/user';
+
+const { Text, Title, Paragraph } = Typography;
+
+const ChannelsPage = () => {
+  const [isAddChannelModalOpen, setAddChannelModalOpen] = React.useState(false);
+  const [isChannelsLoading, setChannelsLoading] = React.useState(false);
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const [channels, setChannels] = useState<ChannelListRes[]>([]);
+  const [selectedChannel, setSelectedChannel] = useState<ChannelListRes>();
+  const [users, setUsers] = useState<UserListRes[]>([]);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const commonStore = useContext(CommonStoreContext);
+  const { selectedApplication } = commonStore;
+  const prevChannelListAbortController = React.useRef<AbortController>(
+    new AbortController(),
+  );
+  const [api, contextHolder] = notification.useNotification();
+  const navigate = useNavigate();
+
+  const getChannelList = async () => {
+    if (commonStore.selectedApplication == null) return;
+    return await ChannelRepository.listChannels(
+      commonStore.selectedApplication.id,
+      '',
+    );
+  };
+  const handleAddChannelModalOk = async () => {
+    setAddChannelModalOpen(false);
+    const channels = await getChannelList();
+    if (channels != null) {
+      setChannels(channels);
+    }
+  };
+
+  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    setSelectedRowKeys(newSelectedRowKeys);
+  };
+
+  const rowSelection: TableRowSelection<ChannelListRes> = {
+    selectedRowKeys,
+    onChange: onSelectChange,
+    selections: [Table.SELECTION_ALL, Table.SELECTION_NONE],
+  };
+
+  const handleSearch = async (searchKeyword: string) => {
+    if (selectedApplication == null) return;
+    prevChannelListAbortController.current.abort();
+    prevChannelListAbortController.current = new AbortController();
+
+    setChannelsLoading(true);
+    const channels = await ChannelRepository.listChannels(
+      selectedApplication.id,
+      searchKeyword,
+      prevChannelListAbortController.current.signal,
+    );
+    setChannels(channels);
+    setChannelsLoading(false);
+  };
+
+  useEffect(() => {
+    const { selectedApplication } = commonStore;
+    if (selectedApplication == null) return;
+    (async () => {
+      setChannelsLoading(true);
+      setChannels(
+        await ChannelRepository.listChannels(selectedApplication.id, ''),
+      );
+      setChannelsLoading(false);
+      setUsers(await UserRepository.listUsers(selectedApplication.id, ''));
+    })();
+  }, [commonStore.selectedApplication]);
+
+  const columns: ColumnsType<ChannelListRes> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      render: (text, record) => (
+        <Space align="center">
+          <img
+            src={DefaultChannelImg}
+            width={32}
+            height={32}
+            style={{ borderRadius: 4 }}
+          />
+          <Space.Compact direction="vertical">
+            <Text strong>{text}</Text>
+            <Text type="secondary">{record.uuid}</Text>
+          </Space.Compact>
+        </Space>
+      ),
+      onCell: (record, rowIdx) => {
+        return {
+          onClick: (event) => {
+            if (commonStore.moderator == null) {
+              api.error({
+                message: 'Please select a moderator',
+              });
+            } else {
+              navigate(
+                `/${commonStore.selectedApplication?.uuid}/channels/${record.uuid}`,
+              );
+            }
+          },
+        };
+      },
+    },
+    {
+      title: 'Members',
+      dataIndex: 'member_count',
+      render: (text, record) => (
+        <Space align="center">
+          <UserOutlined />
+          <Text>
+            {record.user_count} / {record.max_members}
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: 'Last message on',
+      dataIndex: 'last_message_at',
+      render: (_, record) =>
+        record.last_message_at == null
+          ? '—'
+          : Utils.unixTsToDateTimeString(record.last_message_at), // todo: update this
+    },
+    {
+      title: 'Created on',
+      dataIndex: 'created_at',
+      render: (_, record) => Utils.unixTsToDateTimeString(record.created_at),
+    },
+    {
+      title: '',
+      key: 'uuid',
+      render: (_, record) => (
+        <Dropdown
+          placement="bottomRight"
+          menu={{
+            onClick: (selectedMenu) => {
+              setSelectedChannel(record);
+              switch (selectedMenu.key) {
+                case 'delete':
+                  // setIsDeleteAppModalOpen(true);
+                  break;
+              }
+            },
+            items: [
+              {
+                key: 'delete',
+                label: 'Delete',
+                danger: true,
+                disabled: true,
+              },
+            ],
+          }}
+          trigger={['click']}
+        >
+          <Button type="text">
+            <MoreOutlined />
+          </Button>
+        </Dropdown>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      {contextHolder}
+      <Flex justify="space-between">
+        <Title level={4} style={{ margin: '0 0 20px 0' }}>
+          Channels
+        </Title>
+        <Space>
+          <Space>
+            <Text type="secondary">Moderator: </Text>
+
+            <Select
+              placeholder="Link moderator"
+              style={{ width: 240 }}
+              value={commonStore.moderator?.id}
+              onChange={(value) => {
+                commonStore.moderator =
+                  users.find((user) => user.id === value) ?? null;
+              }}
+              options={users.map((user) => ({
+                value: user.id,
+                label: user.nickname,
+              }))}
+            />
+          </Space>
+          <Button type="primary" icon={<DeleteOutlined />} disabled={true}>
+            Delete
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setAddChannelModalOpen(true)}
+          >
+            Create channel
+          </Button>
+        </Space>
+      </Flex>
+
+      <Paragraph>
+        Create and manage channels that allow one-to-one chat or group chat of
+        up to 100 members.
+      </Paragraph>
+
+      <Space>
+        <Input.Search
+          placeholder="Search"
+          style={{ width: 450 }}
+          onSearch={handleSearch}
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.currentTarget.value)}
+        />
+      </Space>
+
+      <Table
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={channels}
+        style={{
+          marginTop: 20,
+        }}
+        rowKey={(record) => record.uuid}
+        loading={isChannelsLoading}
+        pagination={{
+          hideOnSinglePage: true,
+        }}
+      />
+      <AddChannelModal
+        open={isAddChannelModalOpen}
+        onOk={handleAddChannelModalOk}
+        onCancel={() => setAddChannelModalOpen(false)}
+        application={commonStore.selectedApplication}
+      />
+    </div>
+  );
+};
+
+export default observer(ChannelsPage);

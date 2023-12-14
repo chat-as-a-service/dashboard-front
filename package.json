@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@mobx-devtools/tools": "^0.0.4",
+    "@sentry/react": "^7.87.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -10,9 +12,25 @@
     "@types/node": "^16.18.66",
     "@types/react": "^18.2.40",
     "@types/react-dom": "^18.2.17",
+    "@wingflo/js-sdk": "^1.0.4",
+    "antd": "^5.11.5",
+    "axios": "^1.6.2",
+    "dayjs": "^1.11.10",
+    "install": "^0.13.0",
+    "localforage": "^1.10.0",
+    "lodash": "^4.17.21",
+    "match-sorter": "^6.3.1",
+    "mobx": "^6.12.0",
+    "mobx-react-lite": "^4.0.5",
+    "npm": "^10.2.5",
+    "prettier": "^3.1.0",
     "react": "^18.2.0",
+    "react-detect-click-outside": "^1.1.7",
     "react-dom": "^18.2.0",
+    "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
+    "sort-by": "^1.2.0",
+    "styled-components": "^6.1.1",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
@@ -20,13 +38,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+    "eject": "react-scripts eject",
+    "lint": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "browserslist": {
     "production": [
@@ -39,5 +52,18 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:react-hooks/recommended",
+      "prettier"
+    ]
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.202",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-react-hooks": "^4.6.0"
   }
 }
