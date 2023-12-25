@@ -1,4 +1,13 @@
-import { Button, Col, Divider, Flex, Row, Space, Typography } from 'antd';
+import {
+  Button,
+  Col,
+  Divider,
+  Flex,
+  Row,
+  Space,
+  Tooltip,
+  Typography,
+} from 'antd';
 import defaultChannelImg from '../../static/images/default-channel-image-1.png';
 import {
   CloseOutlined,
@@ -78,10 +87,20 @@ const ChatMessageBoxOverlay = styled.div`
   z-index: 100;
 `;
 
+const ScrollToBottomWrapper = styled.div`
+  max-width: 988px;
+  width: 100%;
+  height: 0;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 auto;
+`;
+
 const ScrollToBottomButton = styled(Button)`
   position: absolute;
   bottom: 8px;
-  right: 70px;
+  right: 16px;
 `;
 const ChannelChatBox = ({
   chatMessageBoxRef,
@@ -197,18 +216,22 @@ const ChannelChatBox = ({
                 currentUser={commonStore.moderator}
               />
             </ChatMessageBox>
-
-            <ScrollToBottomButton
-              type="primary"
-              shape="circle"
-              icon={<DownOutlined />}
-              onClick={scrollChatMessageBoxToBottom}
-              size="large"
-              style={{
-                display: isChatMessageBoxScrollAtBottom ? 'block' : 'none',
-              }}
-            />
           </ChatMessageBoxWrapper>
+
+          <ScrollToBottomWrapper>
+            <Tooltip title="Go to bottom">
+              <ScrollToBottomButton
+                type="primary"
+                shape="circle"
+                icon={<DownOutlined />}
+                onClick={scrollChatMessageBoxToBottom}
+                size="large"
+                style={{
+                  display: isChatMessageBoxScrollAtBottom ? 'block' : 'none',
+                }}
+              />
+            </Tooltip>
+          </ScrollToBottomWrapper>
 
           {/*chat input*/}
           <ChatInputBoxWrapper className="chat-input-box-wrapper">
@@ -222,6 +245,8 @@ const ChannelChatBox = ({
             />
           </ChatInputBoxWrapper>
         </Col>
+
+        {/* Replies */}
         {selectedMessage && (
           <ThreadDrawerCol flex="280px">
             <ThreadDrawerHeader justify="space-between" align="center">
