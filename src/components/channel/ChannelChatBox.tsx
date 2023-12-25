@@ -1,7 +1,8 @@
-import { Button, Divider, Flex, Space, Spin, Typography } from 'antd';
+import { Button, Col, Divider, Flex, Row, Space, Typography } from 'antd';
 import defaultChannelImg from '../../static/images/default-channel-image-1.png';
 import {
   CloseOutlined,
+  DownOutlined,
   InfoCircleOutlined,
   UserAddOutlined,
 } from '@ant-design/icons';
@@ -11,36 +12,54 @@ import { MessageLine } from '../message/MessageLine';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
 import { ChatInputBox } from '../message/ChatInputBox';
-import List from 'react-virtualized/dist/commonjs/List';
 import { ChannelChatRepliesList } from './ChannelChatRepliesList';
 import ChannelChatList from './ChannelChatList';
 import { observer } from 'mobx-react-lite';
 import { ChatStoreContext } from '../../pages/application/ApplicationRoot';
 import { flowResult } from 'mobx';
-import { CellMeasurerCache } from 'react-virtualized';
 import { CommonStoreContext } from '../../index';
 import { ReactionOpType } from '../../types/reaction';
+import { Channel as WFChannel } from '@wingflo/js-sdk';
 
 const { Title } = Typography;
+const Box = styled(Flex)`
+  height: calc(100vh - 48px);
+  background: #fff;
+  flex-grow: 1;
+  min-width: 500px;
+`;
+
 const ChannelChatHeader = styled.div`
   border-bottom: 1px solid #e0e0e0;
-  height: 64px;
+  flex: 0 0 64px;
   padding: 0 12px 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-const ChatMessageBox = styled.div`
-  flex: 1 1 0;
-  overflow-y: auto;
+const ChatMessageBoxWrapper = styled.div`
   display: flex;
-  flex-direction: column-reverse;
+  flex: 1 1 auto;
   position: relative;
+  overflow-y: auto;
 `;
 
-const ThreadDrawer = styled(Flex)`
-  width: 280px;
+const ChatInputBoxWrapper = styled.div`
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+`;
+
+const ChatMessageBox = styled.div`
+  overflow-y: auto;
+  padding-bottom: 16px;
+  height: 100%;
+  width: 100%;
+`;
+
+const ThreadDrawerCol = styled(Col)`
   display: flex;
   flex-direction: column;
   border-left: 1px solid #e0e0e0;
@@ -59,14 +78,20 @@ const ChatMessageBoxOverlay = styled.div`
   z-index: 100;
 `;
 
+const ScrollToBottomButton = styled(Button)`
+  position: absolute;
+  bottom: 8px;
+  right: 70px;
+`;
 const ChannelChatBox = ({
   chatMessageBoxRef,
-  chatMessageBoxWidth,
-  chatMessageBoxHeight,
+  isChatMessageBoxScrollAtBottom,
+  scrollChatMessageBoxToBottom,
+  replyMessageBoxRef,
   chatBoxBorderColor,
   infoButtonActive,
   onInfoButtonClick,
-  channelName,
+  channel,
   messages,
   onSendMessage,
   onUpload,
@@ -80,17 +105,15 @@ const ChannelChatBox = ({
   repliesLoading,
   replyUploadFiles,
   onReplyUpload,
-  chatListRef,
-  repliesListRef,
-  chatListCellMeasurerCache,
 }: {
-  chatMessageBoxRef: (instance: Element | null) => void;
-  chatMessageBoxWidth: number;
-  chatMessageBoxHeight: number;
+  chatMessageBoxRef: React.RefObject<HTMLDivElement>;
+  isChatMessageBoxScrollAtBottom: boolean;
+  scrollChatMessageBoxToBottom: () => void;
+  replyMessageBoxRef: React.RefObject<HTMLDivElement>;
   chatBoxBorderColor: string;
   infoButtonActive: boolean;
   onInfoButtonClick: () => void;
-  channelName: string;
+  channel?: WFChannel;
   messages: MessageType[];
   onSendMessage: (message: string, parentMessage?: MessageType) => void;
   onUpload: (file: CustomUploadFile) => void;
@@ -104,9 +127,6 @@ const ChannelChatBox = ({
   repliesLoading: boolean;
   replyUploadFiles: CustomUploadFile[];
   onReplyUpload: (file: CustomUploadFile) => void;
-  chatListRef: React.RefObject<List>;
-  repliesListRef: React.RefObject<List>;
-  chatListCellMeasurerCache: CellMeasurerCache;
 }) => {
   const chatStore = useContext(ChatStoreContext);
   const commonStore = useContext(CommonStoreContext);
@@ -129,24 +149,18 @@ const ChannelChatBox = ({
   };
 
   return (
-    <Flex
-      vertical
-      style={{
-        background: '#fff',
-        flexGrow: 1,
-        minWidth: 500,
-      }}
-    >
+    <Box vertical style={{}}>
       <ChannelChatHeader>
         <Space>
           <img
+            alt={channel?.name ?? 'channel name'}
             src={defaultChannelImg}
             width={32}
             height={32}
             style={{ borderRadius: 4 }}
           />
           <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
-            {channelName}
+            {channel?.name ?? ''}
           </Title>
         </Space>
         <Space>
@@ -158,37 +172,46 @@ const ChannelChatBox = ({
           />
         </Space>
       </ChannelChatHeader>
-      <Flex style={{ flexGrow: 1 }}>
-        <Flex vertical style={{ flexGrow: 1 }}>
+      {/* ChannelChatBody */}
+      <Row style={{ flexGrow: 1 }}>
+        {/* ChannelChat main chat column (excluding threadbox column) */}
+        <Col
+          flex="auto"
+          style={{
+            position: 'relative',
+            display: 'flex',
+            flexDirection: 'column',
+            height: 'calc( 100vh - 48px - 64px )',
+          }}
+        >
           {/*  chat box */}
-          <ChatMessageBox ref={chatMessageBoxRef}>
-            {/*<ChatMessageBoxOverlay />*/}
-            <Spin
-              spinning={messagesLoading}
-              style={{ height: '100%', width: '100%' }}
+          <ChatMessageBoxWrapper className="chat-message-box-wrapper">
+            <ChatMessageBox ref={chatMessageBoxRef}>
+              {/*<ChatMessageBoxOverlay />*/}
+              <ChannelChatList
+                loading={messagesLoading}
+                messages={messages}
+                onMessageSelect={onMessageSelect}
+                onReaction={handleReaction}
+                onMessageDelete={handleMessageDelete}
+                currentUser={commonStore.moderator}
+              />
+            </ChatMessageBox>
+
+            <ScrollToBottomButton
+              type="primary"
+              shape="circle"
+              icon={<DownOutlined />}
+              onClick={scrollChatMessageBoxToBottom}
+              size="large"
+              style={{
+                display: isChatMessageBoxScrollAtBottom ? 'block' : 'none',
+              }}
             />
-            <ChannelChatList
-              width={chatMessageBoxWidth}
-              height={chatMessageBoxHeight}
-              messages={messages}
-              chatListRef={chatListRef}
-              onMessageSelect={onMessageSelect}
-              onReaction={handleReaction}
-              onMessageDelete={handleMessageDelete}
-              chatListCellMeasurerCache={chatListCellMeasurerCache}
-              currentUser={commonStore.moderator}
-            />
-          </ChatMessageBox>
+          </ChatMessageBoxWrapper>
 
           {/*chat input*/}
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              flex: '0 0 auto',
-              margin: 16,
-            }}
-          >
+          <ChatInputBoxWrapper className="chat-input-box-wrapper">
             <ChatInputBox
               chatBoxBorderColor={chatBoxBorderColor}
               onSendMessage={onSendMessage}
@@ -197,10 +220,10 @@ const ChannelChatBox = ({
               onUploadRemove={onUploadRemove}
               style={{ width: '100%' }}
             />
-          </div>
-        </Flex>
+          </ChatInputBoxWrapper>
+        </Col>
         {selectedMessage && (
-          <ThreadDrawer>
+          <ThreadDrawerCol flex="280px">
             <ThreadDrawerHeader justify="space-between" align="center">
               <span style={{ fontSize: 14, fontWeight: 600 }}>Thread</span>
               <Button
@@ -226,16 +249,13 @@ const ChannelChatBox = ({
                 flexGrow: 1,
                 height: 1,
               }}
+              ref={replyMessageBoxRef}
             >
-              <Spin
-                spinning={repliesLoading}
-                style={{ height: '100%', width: '100%' }}
-              />
               <ChannelChatRepliesList
                 replies={replies}
-                repliesListRef={repliesListRef}
                 onReaction={handleReaction}
                 currentUser={commonStore.moderator}
+                loading={repliesLoading}
               />
               <ChatInputBox
                 chatBoxBorderColor={chatBoxBorderColor}
@@ -250,10 +270,10 @@ const ChannelChatBox = ({
                 }}
               />
             </div>
-          </ThreadDrawer>
+          </ThreadDrawerCol>
         )}
-      </Flex>
-    </Flex>
+      </Row>
+    </Box>
   );
 };
 

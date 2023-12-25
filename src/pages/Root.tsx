@@ -34,7 +34,7 @@ import axios from 'axios';
 import LogoImg from '../static/images/wingflo-logo-white-wide-sm.png';
 import axiosInstance from '../axiosInstance';
 
-const { Header } = Layout;
+const { Header, Content } = Layout;
 const { Text } = Typography;
 
 const OrgProfileImgBox = styled.div`
@@ -292,7 +292,14 @@ const Root = () => {
           </Button>
         </Dropdown>
       </Header>
-      <div style={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+      <Content
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          // height: '100%',
+        }}
+      >
         <Outlet
           context={{
             account: commonStore.account,
@@ -301,7 +308,7 @@ const Root = () => {
             setApplications,
           }}
         />
-      </div>
+      </Content>
     </Layout>
   );
 };

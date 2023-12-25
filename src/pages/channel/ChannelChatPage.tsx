@@ -11,13 +11,7 @@ import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
 import { ChatStoreContext } from '../application/ApplicationRoot';
 import { flowResult } from 'mobx';
-import List from 'react-virtualized/dist/commonjs/List';
-import { CellMeasurerCache } from 'react-virtualized';
-import { useMeasure } from '@uidotdev/usehooks';
-
-const messagesListCellMeasurerCache = new CellMeasurerCache({
-  fixedWidth: true,
-});
+import { useScrollBottom } from '../../hooks/useScrollBottom';
 
 const ChannelChatPage = () => {
   const [channelInfoRightSideBarVisible, setChannelInfoRightSideBarVisible] =
@@ -28,9 +22,12 @@ const ChannelChatPage = () => {
   const { selectedApplication } = commonStore;
   const navigate = useNavigate();
   const { token } = theme.useToken();
-  const chatListRef = React.useRef<List>(null);
-  const repliesListRef = React.useRef<List>(null);
-  const [chatMessageBoxRef, { width, height }] = useMeasure();
+  const chatMessageBoxRef = React.useRef<HTMLDivElement>(null);
+  const replyMessageBoxRef = React.useRef<HTMLDivElement>(null);
+  const [isChatMessageBoxScrollAtBottom, scrollChatMessageBoxToBottom] =
+    useScrollBottom(chatMessageBoxRef);
+  const [_, scrollReplyMessageBoxToBottom] =
+    useScrollBottom(replyMessageBoxRef);
   let { channelUuid } = useParams();
 
   useEffect(() => {
@@ -66,20 +63,23 @@ const ChannelChatPage = () => {
       );
       if (defaultSelectedChannel != null) {
         await flowResult(
-          chatStore.selectChatChannel(
-            defaultSelectedChannel,
-            handleMessageUpdate,
-          ),
+          chatStore.selectChatChannel(defaultSelectedChannel, handleNewMessage),
         );
       }
       console.debug('fetched chat channels');
     })();
   }, [channelUuid, commonStore.moderator]);
 
-  const handleMessageUpdate = (messageUuid?: string) => {
-    // messagesListCellMeasurerCache.clearAll();
-    // chatListRef.current?.recomputeRowHeights();
-    // chatListRef.current?.render();
+  const handleNewMessage = (message: MessageType) => {
+    if (message.user.username === commonStore.moderator?.username) {
+      if (message.parent_message_uuid == null) {
+        scrollChatMessageBoxToBottom();
+      } else if (
+        message.parent_message_uuid === chatStore.selectedMessage?.uuid
+      ) {
+        scrollReplyMessageBoxToBottom();
+      }
+    }
   };
 
   const handleMessageSelect = async (selectedMessage?: MessageType) => {
@@ -91,19 +91,26 @@ const ChannelChatPage = () => {
     parentMessage?: MessageType,
   ) => {
     await flowResult(chatStore.sendMessage(message, parentMessage));
-    if (parentMessage == null) {
-      chatListRef.current?.scrollToRow(chatStore.chatMessages.length - 1);
-    } else {
-      repliesListRef.current?.scrollToRow(chatStore.chatReplies.length - 1);
+    if (chatMessageBoxRef.current != null) {
+      if (parentMessage == null) {
+        scrollChatMessageBoxToBottom();
+      } else {
+        scrollReplyMessageBoxToBottom();
+      }
     }
   };
 
   const handleChannelSelect = async (chn: ChannelListRes) => {
     console.debug('handling channel select');
-    messagesListCellMeasurerCache.clearAll();
     await flowResult(chatStore.selectChatChannel(chn));
-    chatListRef.current?.recomputeRowHeights();
-    chatListRef.current?.scrollToRow(chatStore.chatMessages.length - 1);
+    if (chatMessageBoxRef.current != null) {
+      console.debug(
+        'scrolling to bottom',
+        chatMessageBoxRef.current.scrollHeight,
+      );
+      chatMessageBoxRef.current.scrollTop =
+        chatMessageBoxRef.current.scrollHeight;
+    }
   };
 
   const handleAttachmentUpload = async (file: CustomUploadFile) => {
@@ -135,14 +142,15 @@ const ChannelChatPage = () => {
       />
       <ChannelChatBox
         chatMessageBoxRef={chatMessageBoxRef}
-        chatMessageBoxWidth={width ?? 300}
-        chatMessageBoxHeight={height ?? 300}
+        isChatMessageBoxScrollAtBottom={isChatMessageBoxScrollAtBottom}
+        scrollChatMessageBoxToBottom={scrollChatMessageBoxToBottom}
+        replyMessageBoxRef={replyMessageBoxRef}
         chatBoxBorderColor={token.colorPrimaryBorder}
         infoButtonActive={channelInfoRightSideBarVisible}
         onInfoButtonClick={() =>
           setChannelInfoRightSideBarVisible((visible) => !visible)
         }
-        channelName={chatStore.chatChannel?.name ?? ''}
+        channel={chatStore.chatChannel}
         messages={chatStore.chatMessages}
         replies={chatStore.chatReplies}
         onSendMessage={handleSendMessage}
@@ -158,9 +166,6 @@ const ChannelChatPage = () => {
         onReplyUpload={async (file) => {
           await flowResult(chatStore.handleReplyAttachmentUpload(file));
         }}
-        chatListRef={chatListRef}
-        repliesListRef={repliesListRef}
-        chatListCellMeasurerCache={messagesListCellMeasurerCache}
       />
 
       {channelInfoRightSideBarVisible && (

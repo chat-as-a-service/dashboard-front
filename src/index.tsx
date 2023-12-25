@@ -30,7 +30,6 @@ import NotFoundPage from './pages/common/NotFoundPage';
 import ChannelChatPage from './pages/channel/ChannelChatPage';
 import ProtectedRoute from './core/auth/ProtectedRoute';
 import * as Sentry from '@sentry/react';
-import 'react-virtualized/styles.css';
 
 Sentry.init({
   dsn: process.env.REACT_APP_SENTRY_DSN,

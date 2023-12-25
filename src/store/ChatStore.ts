@@ -111,12 +111,13 @@ class ChatStore {
 
   *selectChatChannel(
     channel: WFChannelListRes,
-    messageUpdateCallback?: (messageUuid?: string) => void,
+    onMessageReceived?: (message: MessageType) => void,
   ) {
     if (this.wingFloClient == null) {
       console.warn('cannot select channel. wingflo client is not initialized.');
       return;
     }
+    this.chatMessagesState = 'pending';
     this.chatMessages = [];
     this.chatReplies = [];
     this.selectedMessage = undefined;
@@ -130,7 +131,6 @@ class ChatStore {
     yield selectedChannel.enter();
     console.debug('entered channel', selectedChannel);
     const messageCollection = selectedChannel.createMessageCollection({});
-    this.chatMessagesState = 'pending';
     let messages: MessageType[] = yield messageCollection.loadPrevious();
     this.chatMessagesState = 'done';
     console.debug('loaded messages', messages);
@@ -156,8 +156,8 @@ class ChatStore {
               // ...this.chatMessages.slice(startIndex),
               ...newMessages,
             ];
-            messageUpdateCallback?.();
           });
+          onMessageReceived?.(newMessage);
         } else if (
           this.selectedChatMessage?.uuid === newMessage.parent_message_uuid
         ) {
@@ -188,7 +188,6 @@ class ChatStore {
               this.chatMessages[index] = updatedMessage;
             });
           }
-          messageUpdateCallback?.(updatedMessage.uuid);
         } else if (
           this.selectedChatMessage?.uuid === updatedMessage.parent_message_uuid
         ) {
