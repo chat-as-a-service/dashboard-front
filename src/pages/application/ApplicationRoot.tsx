@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Layout, Menu, MenuProps } from 'antd';
 import { observer } from 'mobx-react-lite';
 import {
@@ -18,6 +18,7 @@ import { ApplicationRepository } from '../../repository/ApplicationRepository';
 import { ApplicationViewRes } from '../../types/application';
 import { CommonStoreContext } from '../../index';
 import styled from 'styled-components';
+import ChatStore from '../../store/ChatStore';
 
 const { Content, Sider } = Layout;
 
@@ -38,6 +39,9 @@ const SideMenuHeader = styled.div`
   padding: 16px 16px 8px 20px;
   white-space: nowrap;
 `;
+const chatStore = new ChatStore();
+
+export const ChatStoreContext = createContext<ChatStore>(chatStore);
 const ApplicationRoot = () => {
   const [selectedSideMenu, selectSideMenu] = useState('');
   let { appUuid } = useParams();
@@ -97,48 +101,50 @@ const ApplicationRoot = () => {
   ];
 
   return (
-    <Layout style={{ flexGrow: 1, height: '100%' }}>
-      <Sider
-        width={250}
-        theme="light"
-        style={{
-          borderRight: '1px solid #dedede',
-          background: '#F7F7F7',
-        }}
-        collapsed={commonStore.appSidebarCollapsed}
-      >
-        {commonStore.appSidebarCollapsed ? null : (
-          <SideMenuHeader>
-            <span>APPLICATION</span>
-          </SideMenuHeader>
-        )}
-
-        <Menu
-          mode="inline"
-          defaultSelectedKeys={['1']}
-          defaultOpenKeys={['sub1']}
-          style={{ height: '100%', borderRight: 0, background: '#F7F7F7' }}
-          items={menuItems}
-          onSelect={(item) => {
-            console.log(item);
-            selectSideMenu(item.key);
+    <ChatStoreContext.Provider value={chatStore}>
+      <Layout style={{ flexGrow: 1, height: '100%' }}>
+        <Sider
+          width={250}
+          theme="light"
+          style={{
+            borderRight: '1px solid #dedede',
+            background: '#F7F7F7',
           }}
-          selectedKeys={[selectedSideMenu]}
-        />
-      </Sider>
-      <Content
-        style={{
-          padding:
-            selectedSideMenu === 'settings' ||
-            commonStore.appRootLayoutNoPadding
-              ? 0
-              : '32px 40px 80px 40px',
-          background: '#fff',
-        }}
-      >
-        <Outlet context={{ application: commonStore.selectedApplication }} />
-      </Content>
-    </Layout>
+          collapsed={commonStore.appSidebarCollapsed}
+        >
+          {commonStore.appSidebarCollapsed ? null : (
+            <SideMenuHeader>
+              <span>APPLICATION</span>
+            </SideMenuHeader>
+          )}
+
+          <Menu
+            mode="inline"
+            defaultSelectedKeys={['1']}
+            defaultOpenKeys={['sub1']}
+            style={{ height: '100%', borderRight: 0, background: '#F7F7F7' }}
+            items={menuItems}
+            onSelect={(item) => {
+              console.log(item);
+              selectSideMenu(item.key);
+            }}
+            selectedKeys={[selectedSideMenu]}
+          />
+        </Sider>
+        <Content
+          style={{
+            padding:
+              selectedSideMenu === 'settings' ||
+              commonStore.appRootLayoutNoPadding
+                ? 0
+                : '32px 40px 80px 40px',
+            background: '#fff',
+          }}
+        >
+          <Outlet context={{ application: commonStore.selectedApplication }} />
+        </Content>
+      </Layout>
+    </ChatStoreContext.Provider>
   );
 };
 

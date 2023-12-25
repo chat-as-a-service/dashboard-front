@@ -23,42 +23,30 @@ import { CommonStoreContext } from '../../index';
 import { observer } from 'mobx-react-lite';
 import { Utils } from '../../core/Util';
 import { ChannelListRes } from '../../types/channel';
-import { ChannelRepository } from '../../repository/ChannelRepository';
 import DefaultChannelImg from '../../static/images/default-channel-image-1.png';
 import { AddChannelModal } from '../../components/channel/AddChannelModal';
 import { UserRepository } from '../../repository/UserRepository';
 import { UserListRes } from '../../types/user';
+import { ChatStoreContext } from '../application/ApplicationRoot';
 
 const { Text, Title, Paragraph } = Typography;
 
 const ChannelsPage = () => {
   const [isAddChannelModalOpen, setAddChannelModalOpen] = React.useState(false);
-  const [isChannelsLoading, setChannelsLoading] = React.useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [channels, setChannels] = useState<ChannelListRes[]>([]);
-  const [selectedChannel, setSelectedChannel] = useState<ChannelListRes>();
   const [users, setUsers] = useState<UserListRes[]>([]);
   const [searchKeyword, setSearchKeyword] = useState('');
   const commonStore = useContext(CommonStoreContext);
+  const chatStore = useContext(ChatStoreContext);
   const { selectedApplication } = commonStore;
-  const prevChannelListAbortController = React.useRef<AbortController>(
-    new AbortController(),
-  );
   const [api, contextHolder] = notification.useNotification();
   const navigate = useNavigate();
 
-  const getChannelList = async () => {
-    if (commonStore.selectedApplication == null) return;
-    return await ChannelRepository.listChannels(
-      commonStore.selectedApplication.id,
-      '',
-    );
-  };
   const handleAddChannelModalOk = async () => {
     setAddChannelModalOpen(false);
-    const channels = await getChannelList();
-    if (channels != null) {
-      setChannels(channels);
+    setSearchKeyword('');
+    if (commonStore.selectedApplication != null) {
+      await chatStore.fetchChannels(commonStore.selectedApplication.id);
     }
   };
 
@@ -74,28 +62,14 @@ const ChannelsPage = () => {
 
   const handleSearch = async (searchKeyword: string) => {
     if (selectedApplication == null) return;
-    prevChannelListAbortController.current.abort();
-    prevChannelListAbortController.current = new AbortController();
-
-    setChannelsLoading(true);
-    const channels = await ChannelRepository.listChannels(
-      selectedApplication.id,
-      searchKeyword,
-      prevChannelListAbortController.current.signal,
-    );
-    setChannels(channels);
-    setChannelsLoading(false);
+    await chatStore.fetchChannels(selectedApplication.id, searchKeyword);
   };
 
   useEffect(() => {
     const { selectedApplication } = commonStore;
     if (selectedApplication == null) return;
     (async () => {
-      setChannelsLoading(true);
-      setChannels(
-        await ChannelRepository.listChannels(selectedApplication.id, ''),
-      );
-      setChannelsLoading(false);
+      await chatStore.fetchChannels(selectedApplication.id);
       setUsers(await UserRepository.listUsers(selectedApplication.id, ''));
     })();
   }, [commonStore.selectedApplication]);
@@ -167,7 +141,7 @@ const ChannelsPage = () => {
           placement="bottomRight"
           menu={{
             onClick: (selectedMenu) => {
-              setSelectedChannel(record);
+              chatStore.selectChannel(record);
               switch (selectedMenu.key) {
                 case 'delete':
                   // setIsDeleteAppModalOpen(true);
@@ -249,12 +223,12 @@ const ChannelsPage = () => {
       <Table
         rowSelection={rowSelection}
         columns={columns}
-        dataSource={channels}
+        dataSource={chatStore.channels}
         style={{
           marginTop: 20,
         }}
         rowKey={(record) => record.uuid}
-        loading={isChannelsLoading}
+        loading={chatStore.channelsState === 'pending'}
         pagination={{
           hideOnSinglePage: true,
         }}

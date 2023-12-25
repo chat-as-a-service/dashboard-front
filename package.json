@@ -12,10 +12,11 @@
     "@types/node": "^16.18.66",
     "@types/react": "^18.2.40",
     "@types/react-dom": "^18.2.17",
-    "@wingflo/js-sdk": "^1.0.4",
+    "@uidotdev/usehooks": "^2.4.1",
     "antd": "^5.11.5",
     "axios": "^1.6.2",
     "dayjs": "^1.11.10",
+    "env-cmd": "^10.1.0",
     "install": "^0.13.0",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
@@ -29,6 +30,8 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
+    "react-virtualized": "^9.22.5",
+    "react-window": "^1.8.10",
     "sort-by": "^1.2.0",
     "styled-components": "^6.1.1",
     "typescript": "^4.9.5",
@@ -37,6 +40,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "build-staging": "env-cmd -f .env.staging react-scripts build && ./deploy-staging.sh",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
@@ -63,6 +67,8 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.202",
+    "@types/react-virtualized": "^9.21.29",
+    "@types/react-window": "^1.8.8",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-react-hooks": "^4.6.0"
   }

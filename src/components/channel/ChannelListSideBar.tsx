@@ -15,6 +15,7 @@ const { Text, Title } = Typography;
 
 const Box = styled.div`
   width: 320px;
+  min-width: 320px;
   background-color: #fff;
   border-right: 1px solid #e0e0e0;
 `;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Button,
   ConfigProvider,
@@ -15,8 +15,8 @@ import {
   SettingFilled,
 } from '@ant-design/icons';
 import styled from 'styled-components';
-import { useDetectClickOutside } from 'react-detect-click-outside';
 import { CustomUploadFile } from '../../types/attachment';
+import { useOutsideAlerter } from '../../hooks/useOutsideAlerter';
 
 const { Text, Title } = Typography;
 
@@ -38,8 +38,6 @@ const Box = styled.div<{
 export const ChatInputBox = ({
   chatBoxBorderColor,
   style,
-  chatInput,
-  onChatInputChange,
   onSendMessage,
   onUpload,
   uploadFiles,
@@ -47,17 +45,16 @@ export const ChatInputBox = ({
 }: {
   chatBoxBorderColor: string;
   style?: React.CSSProperties;
-  onChatInputChange: (input: string) => void;
   onSendMessage: (message: string) => void;
   onUpload: (file: CustomUploadFile) => void;
   uploadFiles: CustomUploadFile[];
   onUploadRemove: (file: CustomUploadFile) => void;
-  chatInput: string;
 }) => {
   const [chatBoxFocused, setChatBoxFocused] = useState(false);
-  const chatBoxRef = useDetectClickOutside({
-    onTriggered: () => setChatBoxFocused(false),
-  });
+  const [chatInput, setChatInput] = useState('');
+
+  const chatBoxRef = useRef(null);
+  useOutsideAlerter(chatBoxRef, () => setChatBoxFocused(false));
   return (
     <Box
       $focusBorderColor={chatBoxBorderColor}
@@ -101,7 +98,7 @@ export const ChatInputBox = ({
           }}
           placeholder="Enter message"
           value={chatInput}
-          onChange={onChatInputChange}
+          onChange={setChatInput}
           onKeyPress={(e) => {
             if (
               e.currentTarget.value.trim() !== '' &&
@@ -109,9 +106,9 @@ export const ChatInputBox = ({
               !e.shiftKey
             ) {
               onSendMessage(e.currentTarget.value);
-              onChatInputChange('');
+              setChatInput('');
             } else {
-              onChatInputChange(e.currentTarget.value);
+              setChatInput(e.currentTarget.value);
             }
             // e.preventDefault();
           }}
