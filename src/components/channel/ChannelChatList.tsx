@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { SetStateAction } from 'react';
 import { MessageLine } from '../message/MessageLine';
 import { MessageType } from '../../types/message';
 import { observer } from 'mobx-react-lite';
@@ -24,6 +24,7 @@ const ChannelChatList = ({
   onReaction,
   onMessageDelete,
   currentUser,
+  setChatDropdownMaskVisible,
 }: {
   loading: boolean;
   messages: MessageType[];
@@ -35,6 +36,7 @@ const ChannelChatList = ({
   ) => void;
   onMessageDelete?: (message: MessageType) => void;
   currentUser: UserListRes | null;
+  setChatDropdownMaskVisible: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   if (loading) {
     return (
@@ -81,6 +83,7 @@ const ChannelChatList = ({
             onReaction={onReaction}
             currentUser={currentUser}
             showDateLine={firstMsgOfTheDay}
+            setChatDropdownMaskVisible={setChatDropdownMaskVisible}
           />
         );
       })}

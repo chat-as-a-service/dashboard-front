@@ -16,7 +16,7 @@ import {
   InfoCircleOutlined,
   UserAddOutlined,
 } from '@ant-design/icons';
-import React, { useContext } from 'react';
+import React, { SetStateAction, useContext } from 'react';
 import styled from 'styled-components';
 import { MessageLine } from '../message/MessageLine';
 import { MessageType } from '../../types/message';
@@ -81,15 +81,6 @@ const ThreadDrawerHeader = styled(Flex)`
   padding: 12px 10px 12px 16px;
 `;
 
-const ChatMessageBoxOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  z-index: 100;
-`;
-
 const ScrollToBottomWrapper = styled.div`
   max-width: 988px;
   width: 100%;
@@ -127,6 +118,7 @@ const ChannelChatBox = ({
   repliesLoading,
   replyUploadFiles,
   onReplyUpload,
+  setChatDropdownMaskVisible,
 }: {
   chatMessageBoxRef: React.RefObject<HTMLDivElement>;
   isChatMessageBoxScrollAtBottom: boolean;
@@ -149,6 +141,7 @@ const ChannelChatBox = ({
   repliesLoading: boolean;
   replyUploadFiles: CustomUploadFile[];
   onReplyUpload: (file: CustomUploadFile) => void;
+  setChatDropdownMaskVisible: React.Dispatch<SetStateAction<boolean>>;
 }) => {
   const chatStore = useContext(ChatStoreContext);
   const commonStore = useContext(CommonStoreContext);
@@ -218,6 +211,7 @@ const ChannelChatBox = ({
                 onReaction={handleReaction}
                 onMessageDelete={handleMessageDelete}
                 currentUser={commonStore.moderator}
+                setChatDropdownMaskVisible={setChatDropdownMaskVisible}
               />
             </ChatMessageBox>
           </ChatMessageBoxWrapper>
@@ -271,6 +265,7 @@ const ChannelChatBox = ({
                   displayMode="thread-full"
                   onReaction={handleReaction}
                   currentUser={commonStore.moderator}
+                  setChatDropdownMaskVisible={setChatDropdownMaskVisible}
                 />
                 <Divider plain orientation="left">
                   {selectedMessage.thread_info?.reply_count ?? 0} replies
@@ -288,6 +283,7 @@ const ChannelChatBox = ({
                     replies={replies}
                     onReaction={handleReaction}
                     currentUser={commonStore.moderator}
+                    setChatDropdownMaskVisible={setChatDropdownMaskVisible}
                   />
                   <ChatInputBox
                     chatBoxBorderColor={chatBoxBorderColor}

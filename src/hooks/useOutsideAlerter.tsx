@@ -5,21 +5,17 @@ import React, { useEffect } from 'react';
  */
 export function useOutsideAlerter(
   ref: React.RefObject<any>,
-  callback: () => void,
-  exception?: any,
+  callback: (event: any) => void,
 ) {
   useEffect(() => {
     /**
      * Alert if clicked on outside of element
      */
-    function handleClickOutside(event: any) {
-      if (ref.current && exception && exception?.contains(event.target)) {
-        return;
-      }
+    const handleClickOutside = (event: any) => {
       if (ref.current && !ref.current.contains(event.target)) {
-        callback();
+        callback(event);
       }
-    }
+    };
 
     // Bind the event listener
     document.addEventListener('mousedown', handleClickOutside);
@@ -28,4 +24,30 @@ export function useOutsideAlerter(
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [ref]);
+}
+
+export function useConditionalOutsideAlerter(
+  ref: React.RefObject<any>,
+  condition: boolean,
+  callback: (event: any) => void,
+) {
+  useEffect(() => {
+    /**
+     * Alert if clicked on outside of element
+     */
+    const handleClickOutside = (event: any) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        callback(event);
+      }
+    };
+
+    // Bind the event listener
+    if (condition) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ref, condition]);
 }

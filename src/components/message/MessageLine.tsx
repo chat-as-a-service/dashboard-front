@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { SetStateAction, useMemo } from 'react';
 import styled from 'styled-components';
 import {
   Avatar,
@@ -22,19 +22,22 @@ import {
 } from '@ant-design/icons';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { UserListRes } from '../../types/user';
-import { ReactionOpType } from '../../types/reaction';
-import { useOutsideAlerter } from '../../hooks/useOutsideAlerter';
+import { ReactionOpType, ReactionToEmojiMap } from '../../types/reaction';
+import { useConditionalOutsideAlerter } from '../../hooks/useOutsideAlerter';
 
 dayjs.extend(relativeTime);
 const { Text, Paragraph } = Typography;
+type DropdownType = 'reactions' | 'more' | null;
 
-const Box = styled.div`
+const Box = styled.div<{ $openedDropdown: DropdownType }>`
   display: flex;
   flex-direction: column;
   align-items: center;
   letter-spacing: -0.1px;
   line-height: 20px;
   position: relative;
+  background: ${({ $openedDropdown }) =>
+    $openedDropdown == null ? 'inherit' : 'rgba(13, 13, 13, 0.04)'};
 
   &:hover {
     background: rgba(13, 13, 13, 0.04);
@@ -87,20 +90,8 @@ const ActionBoxBox = styled.div`
   border-radius: 5px;
   padding: 0 5px;
   align-items: center;
+  z-index: 900;
 `;
-
-const DateLine = styled(Divider)``;
-
-const reactionToEmojiMap: Record<string, string> = {
-  like: '👍',
-  love: '❤️',
-  haha: '😂',
-  wow: '😮',
-  sad: '😢',
-  angry: '😡',
-  check: '✅',
-  clap: '👏',
-};
 
 const Linkify = ({ children }: { children: string }) => {
   const isUrl = (word: string) => {
@@ -124,18 +115,15 @@ export const MessageLine = ({
   displayMode,
   onMessageSelect,
   onMessageDelete,
-  style,
   onReaction,
   currentUser,
   showDateLine = false,
-  onReRender,
-  registerChild,
+  setChatDropdownMaskVisible,
 }: {
   message: MessageType;
   displayMode: 'compact' | 'full' | 'thread-full' | 'thread-compact';
   onMessageSelect?: (message: MessageType) => void;
   onMessageDelete?: (message: MessageType) => void;
-  style?: React.CSSProperties;
   onReaction: (
     message: MessageType,
     reaction: string,
@@ -143,24 +131,18 @@ export const MessageLine = ({
   ) => void;
   currentUser: UserListRes | null;
   showDateLine?: boolean;
-  onReRender?: () => void;
-  registerChild?: (element?: Element) => void;
+  setChatDropdownMaskVisible: React.Dispatch<SetStateAction<boolean>>;
 }) => {
-  const [reactionPopConfirmOpen, setReactionPopConfirmOpen] =
-    React.useState(false);
   const [actionBoxOpen, setActionBoxOpen] = React.useState(false);
   const boxRef = React.useRef<HTMLDivElement>(null);
-  const reactionBoxRef = React.useRef(null);
-  const actionBoxRef = React.useRef(null);
+  const [openedDropdown, setOpenedDropdown] =
+    React.useState<DropdownType>(null);
 
-  useOutsideAlerter(
-    boxRef,
-    () => {
-      setReactionPopConfirmOpen(false);
-      setActionBoxOpen(false);
-    },
-    reactionBoxRef.current,
-  );
+  useConditionalOutsideAlerter(boxRef, actionBoxOpen, () => {
+    setOpenedDropdown(null);
+    setActionBoxOpen(false);
+    setChatDropdownMaskVisible(false);
+  });
 
   const isThread = useMemo(() => {
     return displayMode === 'thread-full' || displayMode === 'thread-compact';
@@ -186,9 +168,9 @@ export const MessageLine = ({
     return map;
   }, [currentUser?.username, message.reactions]);
 
-  const handleReactionButtonClick = (e: React.MouseEvent, reaction: string) => {
-    e.preventDefault();
-    setReactionPopConfirmOpen(false);
+  const handleReactionButtonClick = (reaction: string) => {
+    setOpenedDropdown(null);
+    setChatDropdownMaskVisible(false);
     onReaction(
       message,
       reaction,
@@ -201,7 +183,7 @@ export const MessageLine = ({
   };
 
   const handleMouseLeave = () => {
-    if (!reactionPopConfirmOpen) {
+    if (openedDropdown == null) {
       setActionBoxOpen(false);
     }
   };
@@ -214,12 +196,41 @@ export const MessageLine = ({
         onMessageDelete?.(message);
         break;
     }
+    setOpenedDropdown(null);
+  };
+
+  const handleActionButtonClick = (buttonType: DropdownType | 'reply') => {
+    switch (buttonType) {
+      case 'reactions':
+        setOpenedDropdown((openedDropdown) => {
+          if (openedDropdown === 'reactions') {
+            setChatDropdownMaskVisible(false);
+            return null;
+          }
+          setChatDropdownMaskVisible(true);
+          return 'reactions';
+        });
+        break;
+      case 'reply':
+        setOpenedDropdown(null);
+        setChatDropdownMaskVisible(false);
+        break;
+      case 'more':
+        setOpenedDropdown((openedDropdown) => {
+          if (openedDropdown === 'more') {
+            setChatDropdownMaskVisible(false);
+            return null;
+          }
+          setChatDropdownMaskVisible(true);
+          return 'more';
+        });
+        break;
+    }
   };
 
   return (
     <>
-      {/* @ts-ignore */}
-      <div style={{ width: '100%' }} ref={registerChild}>
+      <div style={{ width: '100%' }}>
         {showDateLine && (
           <Divider plain orientationMargin="0">
             <div
@@ -240,6 +251,7 @@ export const MessageLine = ({
           ref={boxRef}
           onMouseEnter={() => handleMouseEnter()}
           onMouseLeave={handleMouseLeave}
+          $openedDropdown={openedDropdown}
         >
           <InnerBox>
             <LeftCol>
@@ -301,7 +313,7 @@ export const MessageLine = ({
                   cover={
                     message.og_tag.image && (
                       <img
-                        alt={message.og_tag.image_alt ?? ''}
+                        alt={message.og_tag.image_alt ?? message.og_tag.title}
                         src={message.og_tag.image}
                       />
                     )
@@ -331,8 +343,9 @@ export const MessageLine = ({
                     userReactedMap?.[reaction] ?? false;
                   return (
                     <Button
+                      key={reaction}
                       size="small"
-                      icon={reactionToEmojiMap[reaction]}
+                      icon={ReactionToEmojiMap[reaction]}
                       type={userAlreadyReacted ? 'primary' : 'text'}
                       onClick={() =>
                         onReaction(
@@ -376,40 +389,33 @@ export const MessageLine = ({
           </InnerBox>
 
           {!isThread && (
-            <ActionBoxBox
-              style={{ display: actionBoxOpen ? 'flex' : 'none' }}
-              ref={actionBoxRef}
-            >
+            <ActionBoxBox style={{ display: actionBoxOpen ? 'flex' : 'none' }}>
               <Tooltip
-                open={reactionPopConfirmOpen}
+                open={openedDropdown === 'reactions'}
                 placement="bottomRight"
-                trigger={['click']}
                 color="#fff"
+                getPopupContainer={() => boxRef.current ?? window.document.body}
                 overlayInnerStyle={{ padding: 5 }}
+                zIndex={1100}
                 title={
-                  <Space>
-                    <Button
-                      icon="👍"
-                      type="text"
-                      onClick={(e) => handleReactionButtonClick(e, 'like')}
-                    />
-                    <Button
-                      icon="✅"
-                      type="text"
-                      onClick={(e) => handleReactionButtonClick(e, 'check')}
-                    />
-                    <Button
-                      icon="👏"
-                      type="text"
-                      onClick={(e) => handleReactionButtonClick(e, 'clap')}
-                    />
+                  <Space wrap>
+                    {Object.entries(ReactionToEmojiMap).map(
+                      ([reaction, emoji]) => (
+                        <Button
+                          key={reaction}
+                          icon={emoji}
+                          type="text"
+                          onClick={() => handleReactionButtonClick(reaction)}
+                        />
+                      ),
+                    )}
                   </Space>
                 }
               >
                 <Button
                   icon={<SmileOutlined />}
                   type="text"
-                  onClick={() => setReactionPopConfirmOpen((open) => !open)}
+                  onClick={() => handleActionButtonClick('reactions')}
                 />
               </Tooltip>
               <Tooltip title="Reply in thread">
@@ -418,12 +424,15 @@ export const MessageLine = ({
                   type="text"
                   onClick={() => {
                     onMessageSelect?.(message);
-                    setReactionPopConfirmOpen(false);
+                    handleActionButtonClick('reply');
                   }}
                 />
               </Tooltip>
               <Dropdown
-                trigger={['click']}
+                overlayStyle={{ zIndex: 1100 }}
+                open={openedDropdown === 'more'}
+                placement="bottomRight"
+                getPopupContainer={() => boxRef.current ?? window.document.body}
                 menu={{
                   items: [
                     {
@@ -439,11 +448,15 @@ export const MessageLine = ({
                   ],
                   onClick: ({ key }) => {
                     handleMoreAction(key, message);
-                    setReactionPopConfirmOpen(false);
                   },
                 }}
               >
-                <Button icon={<MoreOutlined />} type="text" size="small" />
+                <Button
+                  icon={<MoreOutlined />}
+                  type="text"
+                  size="small"
+                  onClick={() => handleActionButtonClick('more')}
+                />
               </Dropdown>
             </ActionBoxBox>
           )}
