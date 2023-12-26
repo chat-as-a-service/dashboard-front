@@ -54,7 +54,7 @@ export const DeleteUserModal = ({
     {
       title: 'Nickname',
       dataIndex: 'nickname',
-      render: (text, record) => (
+      render: (text) => (
         <Space align="center">
           <img
             width={20}
