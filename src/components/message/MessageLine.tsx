@@ -50,6 +50,7 @@ const InnerBox = styled.div`
 
 const LeftCol = styled.div`
   width: 45px;
+  flex: 0 0 auto;
 `;
 
 const MessageTimestamp = styled.time`
@@ -218,7 +219,7 @@ export const MessageLine = ({
   return (
     <>
       {/* @ts-ignore */}
-      <div style={style} ref={registerChild}>
+      <div style={{ width: '100%' }} ref={registerChild}>
         {showDateLine && (
           <Divider plain orientationMargin="0">
             <div
@@ -257,7 +258,7 @@ export const MessageLine = ({
                 <Avatar size={32} src={defaultUserImage} />
               )}
             </LeftCol>
-            <div>
+            <div style={{ flexGrow: 1 }}>
               {(displayMode === 'full' ||
                 displayMode === 'thread-full' ||
                 displayMode === 'thread-compact') && (
@@ -291,10 +292,7 @@ export const MessageLine = ({
               {message.og_tag && (
                 <Card
                   style={{
-                    width:
-                      displayMode === 'full' || displayMode === 'compact'
-                        ? 300
-                        : '80%',
+                    width: isThread ? 200 : 300,
                     margin: '10px 0',
                     cursor: 'pointer',
                   }}
@@ -305,12 +303,25 @@ export const MessageLine = ({
                       <img
                         alt={message.og_tag.image_alt ?? ''}
                         src={message.og_tag.image}
-                        onLoad={onReRender}
                       />
                     )
                   }
+                  bodyStyle={{
+                    padding: 10,
+                  }}
                 >
-                  <Card.Meta title={message.og_tag.title} />
+                  <Card.Meta
+                    title={
+                      <span
+                        style={{
+                          fontSize: isThread ? 12 : 14,
+                          fontWeight: 400,
+                        }}
+                      >
+                        {message.og_tag.title}
+                      </span>
+                    }
+                  />
                 </Card>
               )}
               {/* Reactions */}
