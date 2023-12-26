@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useMemo } from 'react';
 import {
   Button,
   Dropdown,
@@ -57,6 +57,10 @@ type ContextType = {
   applications: ApplicationListRes[];
   setApplications: React.Dispatch<React.SetStateAction<ApplicationListRes[]>>;
 };
+
+const NotificationContext = React.createContext({
+  name: 'NotificationContext',
+});
 
 const Root = () => {
   const navigate = useNavigate();
@@ -197,42 +201,83 @@ const Root = () => {
   const menuProps = {
     items: profileDropdownItems,
   };
+  const notificationContextValue = useMemo(
+    () => ({ name: 'NotificationContext' }),
+    [],
+  );
   if (commonStore.account == null || commonStore.organization == null)
     return <Spin></Spin>;
 
   return (
-    <Layout
-      style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}
-    >
-      <Header
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          height: 48,
-          paddingRight: '10px',
-          paddingLeft: 20,
-        }}
+    <NotificationContext.Provider value={notificationContextValue}>
+      <Layout
+        style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}
       >
-        <Flex align="center" gap={20}>
-          <Link to="/" style={{ lineHeight: 0 }}>
-            <img alt="WingFlo logo" src={LogoImg} height={35} />
-          </Link>
+        <Header
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            height: 48,
+            paddingRight: '10px',
+            paddingLeft: 20,
+          }}
+        >
+          <Flex align="center" gap={20}>
+            <Link to="/" style={{ lineHeight: 0 }}>
+              <img alt="WingFlo logo" src={LogoImg} height={35} />
+            </Link>
 
+            <Dropdown
+              menu={{
+                items: commonStore.applications.map((app) => ({
+                  key: app.uuid,
+                  label: <Link to={`/${app.uuid}/overview`}>{app.name}</Link>,
+                  style: { padding: '10px 15px' },
+                })),
+              }}
+              trigger={['click']}
+              dropdownRender={(menu) => (
+                <div
+                  style={{
+                    ...contentStyle,
+                    width: 280,
+                  }}
+                >
+                  {React.cloneElement(menu as React.ReactElement, {
+                    style: menuStyle,
+                  })}
+                </div>
+              )}
+            >
+              <Button
+                type="text"
+                size="large"
+                onClick={(e) => e.preventDefault()}
+                style={{
+                  color: '#fff',
+                  fontSize: 14,
+                  width: 160,
+                  textAlign: 'left',
+                }}
+              >
+                <Space>
+                  {commonStore.selectedApplication != null
+                    ? commonStore.selectedApplication.name
+                    : 'Select application'}
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
+          </Flex>
           <Dropdown
-            menu={{
-              items: commonStore.applications.map((app) => ({
-                key: app.uuid,
-                label: <Link to={`/${app.uuid}/overview`}>{app.name}</Link>,
-                style: { padding: '10px 15px' },
-              })),
-            }}
+            menu={menuProps}
             trigger={['click']}
             dropdownRender={(menu) => (
               <div
                 style={{
                   ...contentStyle,
-                  width: 280,
+                  width: 250,
                 }}
               >
                 {React.cloneElement(menu as React.ReactElement, {
@@ -241,75 +286,40 @@ const Root = () => {
               </div>
             )}
           >
-            <Button
-              type="text"
-              size="large"
-              onClick={(e) => e.preventDefault()}
-              style={{
-                color: '#fff',
-                fontSize: 14,
-                width: 160,
-                textAlign: 'left',
-              }}
-            >
-              <Space>
-                {commonStore.selectedApplication != null
-                  ? commonStore.selectedApplication.name
-                  : 'Select application'}
-                <DownOutlined />
-              </Space>
+            <Button type="text" style={{ color: '#fff', height: '100%' }}>
+              <Flex align="center">
+                <span style={{ marginRight: 10 }}>
+                  {commonStore.organization?.name}
+                </span>
+                <img
+                  src={defaultAccountImage}
+                  width="32"
+                  height="32"
+                  style={{ borderRadius: '50%' }}
+                />
+              </Flex>
             </Button>
           </Dropdown>
-        </Flex>
-        <Dropdown
-          menu={menuProps}
-          trigger={['click']}
-          dropdownRender={(menu) => (
-            <div
-              style={{
-                ...contentStyle,
-                width: 250,
-              }}
-            >
-              {React.cloneElement(menu as React.ReactElement, {
-                style: menuStyle,
-              })}
-            </div>
-          )}
-        >
-          <Button type="text" style={{ color: '#fff', height: '100%' }}>
-            <Flex align="center">
-              <span style={{ marginRight: 10 }}>
-                {commonStore.organization?.name}
-              </span>
-              <img
-                src={defaultAccountImage}
-                width="32"
-                height="32"
-                style={{ borderRadius: '50%' }}
-              />
-            </Flex>
-          </Button>
-        </Dropdown>
-      </Header>
-      <Content
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          flexGrow: 1,
-          // height: '100%',
-        }}
-      >
-        <Outlet
-          context={{
-            account: commonStore.account,
-            organization: commonStore.organization,
-            applications,
-            setApplications,
+        </Header>
+        <Content
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            flexGrow: 1,
+            // height: '100%',
           }}
-        />
-      </Content>
-    </Layout>
+        >
+          <Outlet
+            context={{
+              account: commonStore.account,
+              organization: commonStore.organization,
+              applications,
+              setApplications,
+            }}
+          />
+        </Content>
+      </Layout>
+    </NotificationContext.Provider>
   );
 };
 export default observer(Root);

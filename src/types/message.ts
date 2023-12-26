@@ -49,3 +49,5 @@ export interface ReactionType {
   user: User;
   created_at: number;
 }
+
+export type MessageLineActionBoxDropdownType = 'reactions' | 'more' | null;

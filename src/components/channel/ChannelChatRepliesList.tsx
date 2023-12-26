@@ -1,5 +1,5 @@
 import React, { SetStateAction } from 'react';
-import { MessageLine } from '../message/MessageLine';
+import MessageLine from '../message/MessageLine/MessageLine';
 import { MessageType } from '../../types/message';
 import { UserListRes } from '../../types/user';
 import { ReactionOpType } from '../../types/reaction';

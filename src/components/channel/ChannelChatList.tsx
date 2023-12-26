@@ -1,11 +1,11 @@
 import React, { SetStateAction } from 'react';
-import { MessageLine } from '../message/MessageLine';
+import MessageLine from '../message/MessageLine/MessageLine';
 import { MessageType } from '../../types/message';
 import { observer } from 'mobx-react-lite';
 import { UserListRes } from '../../types/user';
 import { ReactionOpType } from '../../types/reaction';
 import dayjs from 'dayjs';
-import { Empty, Spin } from 'antd';
+import { Empty, notification, Spin } from 'antd';
 import styled from 'styled-components';
 
 const Box = styled.div`
@@ -22,7 +22,6 @@ const ChannelChatList = ({
   messages,
   onMessageSelect,
   onReaction,
-  onMessageDelete,
   currentUser,
   setChatDropdownMaskVisible,
 }: {
@@ -34,10 +33,11 @@ const ChannelChatList = ({
     reaction: string,
     op: ReactionOpType,
   ) => void;
-  onMessageDelete?: (message: MessageType) => void;
   currentUser: UserListRes | null;
   setChatDropdownMaskVisible: React.Dispatch<SetStateAction<boolean>>;
 }) => {
+  const [notificationApi, notificationContextHolder] =
+    notification.useNotification();
   if (loading) {
     return (
       <Box>
@@ -47,6 +47,7 @@ const ChannelChatList = ({
   }
   return (
     <Box>
+      {notificationContextHolder}
       {messages.length === 0 && !loading && <Empty description="No messages" />}
       {messages.map((message, index) => {
         let displayFull = false;
@@ -73,17 +74,18 @@ const ChannelChatList = ({
         }
         return (
           <MessageLine
+            wrapperStyle={{ width: '100%' }}
             key={message.uuid}
             message={message}
             displayMode={displayFull ? 'full' : 'compact'}
             onMessageSelect={() => {
               onMessageSelect(message);
             }}
-            onMessageDelete={onMessageDelete}
             onReaction={onReaction}
             currentUser={currentUser}
             showDateLine={firstMsgOfTheDay}
             setChatDropdownMaskVisible={setChatDropdownMaskVisible}
+            notificationApi={notificationApi}
           />
         );
       })}
