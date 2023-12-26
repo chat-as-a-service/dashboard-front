@@ -12,10 +12,21 @@ import { CustomUploadFile } from '../../types/attachment';
 import { ChatStoreContext } from '../application/ApplicationRoot';
 import { flowResult } from 'mobx';
 import { useScrollBottom } from '../../hooks/useScrollBottom';
+import styled from 'styled-components';
+
+const ChatDropdownMask = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1000;
+`;
 
 const ChannelChatPage = () => {
   const [channelInfoRightSideBarVisible, setChannelInfoRightSideBarVisible] =
     useState(true);
+  const [chatDropdownMaskVisible, setChatDropdownMaskVisible] = useState(false);
 
   const commonStore = useContext(CommonStoreContext);
   const chatStore = useContext(ChatStoreContext);
@@ -133,8 +144,11 @@ const ChannelChatPage = () => {
         display: 'flex',
         flexDirection: 'row',
         background: '#fff',
+        position: 'relative',
       }}
     >
+      {chatDropdownMaskVisible && <ChatDropdownMask />}
+
       <ChannelListSideBar
         application={selectedApplication}
         channels={chatStore.channels}
@@ -167,6 +181,7 @@ const ChannelChatPage = () => {
         onReplyUpload={async (file) => {
           await flowResult(chatStore.handleReplyAttachmentUpload(file));
         }}
+        setChatDropdownMaskVisible={setChatDropdownMaskVisible}
       />
 
       {channelInfoRightSideBarVisible && (
