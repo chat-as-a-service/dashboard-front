@@ -1,8 +1,6 @@
-import { Form, Input, Modal, Space } from 'antd';
+import { Form, Input, Modal } from 'antd';
 import React, { useEffect } from 'react';
 import { ApplicationListRes } from '../../types/application';
-import { ApplicationRepository } from '../../repository/ApplicationRepository';
-import { UserRepository } from '../../repository/UserRepository';
 import { ChannelRepository } from '../../repository/ChannelRepository';
 
 type FormFieldType = {
