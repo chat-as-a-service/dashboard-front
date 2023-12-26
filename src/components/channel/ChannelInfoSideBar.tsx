@@ -46,8 +46,8 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false);
 
   return (
-    <ChannelInfoRightSideBar flex="320'x">
-      ' {/*  channel info */}
+    <ChannelInfoRightSideBar flex="320px">
+      {/*  channel info */}
       <ChannelInfoRightSideBarHeader justify="space-between" align="center">
         <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
           Channel information
@@ -67,7 +67,6 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
             {
               key: 'information',
               label: <Text strong>Information</Text>,
-              // style: { padding: 0 },
               children: (
                 <Descriptions
                   size="small"

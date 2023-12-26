@@ -171,8 +171,7 @@ const ChannelChatBox = ({
   };
 
   return (
-    <Box flex="1'0 auto">
-      '{' '}
+    <Box flex="1 0 auto">
       <ChannelChatHeader>
         <Space>
           <img
