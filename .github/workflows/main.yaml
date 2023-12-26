@@ -10,11 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install modules
-        run: npm install
+        run: npm ci
       - name: Run ESLint check
-        run: eslint . --ext .js,.jsx,.ts,.tsx
+        run: npm run eslint:check
       - name: Run Prettier check
-        uses: creyD/prettier_action@v4.3
-        with:
-          dry: true
-          prettier_options: --check
+        run: npm run prettier:check
