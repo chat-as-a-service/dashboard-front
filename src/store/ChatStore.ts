@@ -1,4 +1,4 @@
-import { flow, makeAutoObservable, runInAction, set } from 'mobx';
+import { flow, makeAutoObservable, observable, runInAction, set } from 'mobx';
 import { ChannelListRes } from '../types/channel';
 import { MessageType } from '../types/message';
 import { CustomUploadFile } from '../types/attachment';
@@ -14,28 +14,28 @@ import {
 import { UserViewRes } from '../types/user';
 import { UserRepository } from '../repository/UserRepository';
 import { RcFile } from 'antd/es/upload';
+import { AsyncOpState } from '../types/common';
 
-type state = 'pending' | 'done' | 'error';
 const MAX_MESSAGES_TO_KEEP_LOCALLY = 100;
 
 class ChatStore {
   // channels used for listing channels
   channels: ChannelListRes[] = [];
-  channelsState: state = 'done';
+  channelsState: AsyncOpState = 'done';
   selectedChannel?: ChannelListRes;
 
   // channels used in chat page
   chatChannels: WFChannelListRes[] = [];
-  chatChannelsState: state = 'done';
+  chatChannelsState: AsyncOpState = 'done';
   selectedChatChannel?: WFChannelListRes;
   chatChannel?: WFChannel;
   chattingUser?: UserViewRes;
   messageCollection?: MessageCollection;
 
-  chatMessages: MessageType[] = [];
-  chatMessagesState: state = 'done';
+  chatMessages = observable<MessageType>([]);
+  chatMessagesState: AsyncOpState = 'done';
 
-  chatRepliesState: state = 'done';
+  chatRepliesState: AsyncOpState = 'done';
   selectedMessage?: MessageType;
   selectedChatMessage?: Message;
   chatReplies: MessageType[] = [];
@@ -43,6 +43,8 @@ class ChatStore {
   replyUploadFiles: CustomUploadFile[] = [];
   channelListAbortController = new AbortController();
   wingFloClient?: WingFloClient;
+
+  deleteMessageState: AsyncOpState = 'done';
 
   constructor() {
     makeAutoObservable(this, {
@@ -118,7 +120,7 @@ class ChatStore {
       return;
     }
     this.chatMessagesState = 'pending';
-    this.chatMessages = [];
+    this.chatMessages.clear();
     this.chatReplies = [];
     this.selectedMessage = undefined;
     this.selectedChatMessage = undefined;
@@ -131,12 +133,10 @@ class ChatStore {
     yield selectedChannel.enter();
     console.debug('entered channel', selectedChannel);
     const messageCollection = selectedChannel.createMessageCollection({});
-    let messages: MessageType[] = yield messageCollection.loadPrevious();
-    this.chatMessagesState = 'done';
-    console.debug('loaded messages', messages);
-    this.chatMessages = messages;
+    this.chatMessages = yield messageCollection.loadPrevious();
     this.chatChannel = selectedChannel;
     this.messageCollection = messageCollection;
+    this.chatMessagesState = 'done';
     messageCollection.setMessageCollectionHandler({
       onMessagesReceived: (channel, newMessages) => {
         const newMessage = newMessages[0];
@@ -151,11 +151,11 @@ class ChatStore {
           );
 
           runInAction(() => {
-            this.chatMessages = [
+            this.chatMessages.replace([
               ...this.chatMessages,
               // ...this.chatMessages.slice(startIndex),
               ...newMessages,
-            ];
+            ]);
           });
           onMessageReceived?.(newMessage);
         } else if (
@@ -197,6 +197,14 @@ class ChatStore {
           if (index !== -1) {
             set(this.chatReplies, index, updatedMessage);
           }
+        }
+      },
+      onMessageDeleted: (channel, deletedMessageUuid) => {
+        const msgToDelete = this.chatMessages.find(
+          (m) => m.uuid === deletedMessageUuid,
+        );
+        if (msgToDelete != null) {
+          this.chatMessages.remove(msgToDelete);
         }
       },
     });
@@ -263,10 +271,10 @@ class ChatStore {
         if (newMessage.parent_message_uuid == null) {
           const startIndex =
             this.chatMessages.length - MAX_MESSAGES_TO_KEEP_LOCALLY;
-          this.chatMessages = [
+          this.chatMessages.replace([
             ...this.chatMessages.slice(startIndex),
             ...newMessages,
-          ];
+          ]);
         } else if (msg.uuid === newMessage.parent_message_uuid) {
           const startIndex =
             this.chatReplies.length - MAX_MESSAGES_TO_KEEP_LOCALLY;
@@ -432,14 +440,41 @@ class ChatStore {
     msg.deleteReaction(reaction);
   }
 
-  *deleteMessage(messageUuid: string) {
+  *deleteMessage(message: MessageType) {
     if (this.wingFloClient == null || this.chatChannel == null) {
       console.warn('wingflo client or chat channel is not initialized');
       return;
     }
+    this.deleteMessageState = 'pending';
+    try {
+      yield this.chatChannel.deleteMessage(message.uuid);
+      this.deleteMessageState = 'done';
+    } catch (e) {
+      console.error('Failed to delete message', e);
+      this.deleteMessageState = 'error';
+    }
+    console.debug('deleted msg', message.uuid);
+  }
 
-    yield this.chatChannel.deleteMessage(messageUuid);
-    console.debug('deleted msg', messageUuid);
+  getMessageUserReactedMap(
+    messageUuid: string,
+    username: string,
+  ): Record<string, boolean> {
+    const map: Record<string, boolean> = {};
+    const msg = this.chatMessages.find((m) => m.uuid === messageUuid);
+    if (msg == null) {
+      console.warn(
+        'cannot find message to create user reacted map for message uuid:',
+        messageUuid,
+      );
+      return map;
+    }
+    for (const reaction of msg.reactions) {
+      if (reaction.user.username === username) {
+        map[reaction.reaction] = true;
+      }
+    }
+    return map;
   }
 }
 

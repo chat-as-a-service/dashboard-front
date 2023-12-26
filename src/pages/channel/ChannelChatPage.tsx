@@ -115,10 +115,6 @@ const ChannelChatPage = () => {
     console.debug('handling channel select');
     await flowResult(chatStore.selectChatChannel(chn));
     if (chatMessageBoxRef.current != null) {
-      console.debug(
-        'scrolling to bottom',
-        chatMessageBoxRef.current.scrollHeight,
-      );
       chatMessageBoxRef.current.scrollTop =
         chatMessageBoxRef.current.scrollHeight;
     }

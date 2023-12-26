@@ -1,11 +1,9 @@
 import React from 'react';
 import { Button, Card, Col, Descriptions, Flex, Row, Typography } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import type { DescriptionsProps } from 'antd/es/descriptions';
 import defaultAppImage from '../../static/images/default-app-image.svg';
 import styled from 'styled-components';
 import { useAppOutletContext } from './ApplicationRoot';
-import { Utils } from '../../core/Util';
 import dayjs from 'dayjs';
 
 const { Text, Title } = Typography;

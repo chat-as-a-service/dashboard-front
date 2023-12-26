@@ -18,7 +18,7 @@ import styled from 'styled-components';
 import { CustomUploadFile } from '../../types/attachment';
 import { useOutsideAlerter } from '../../hooks/useOutsideAlerter';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const Box = styled.div<{
   $focusBorderColor: string;

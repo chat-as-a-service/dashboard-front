@@ -18,7 +18,7 @@ import {
 } from '@ant-design/icons';
 import React, { SetStateAction, useContext } from 'react';
 import styled from 'styled-components';
-import { MessageLine } from '../message/MessageLine';
+import MessageLine from '../message/MessageLine/MessageLine';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
 import { ChatInputBox } from '../message/ChatInputBox';
@@ -158,11 +158,6 @@ const ChannelChatBox = ({
     }
   };
 
-  const handleMessageDelete = async (message: MessageType) => {
-    console.debug('deleting msg', message.uuid);
-    await flowResult(chatStore.deleteMessage(message.uuid));
-  };
-
   return (
     <Box flex="1 0 auto">
       <ChannelChatHeader>
@@ -209,7 +204,6 @@ const ChannelChatBox = ({
                 messages={messages}
                 onMessageSelect={onMessageSelect}
                 onReaction={handleReaction}
-                onMessageDelete={handleMessageDelete}
                 currentUser={commonStore.moderator}
                 setChatDropdownMaskVisible={setChatDropdownMaskVisible}
               />

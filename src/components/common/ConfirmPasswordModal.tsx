@@ -3,10 +3,6 @@ import { Input, Modal, Typography } from 'antd';
 
 const { Text } = Typography;
 
-type FormFieldType = {
-  applicationName?: string;
-};
-
 export const ConfirmPasswordModal = ({
   open,
   onSubmit,
