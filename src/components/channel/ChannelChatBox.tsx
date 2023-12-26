@@ -5,6 +5,7 @@ import {
   Flex,
   Row,
   Space,
+  Spin,
   Tooltip,
   Typography,
 } from 'antd';
@@ -31,11 +32,12 @@ import { ReactionOpType } from '../../types/reaction';
 import { Channel as WFChannel } from '@wingflo/js-sdk';
 
 const { Title } = Typography;
-const Box = styled(Flex)`
+const Box = styled(Col)`
+  display: flex;
+  flex-direction: column;
   height: calc(100vh - 48px);
   background: #fff;
-  flex-grow: 1;
-  min-width: 500px;
+  width: 660px;
 `;
 
 const ChannelChatHeader = styled.div`
@@ -58,7 +60,7 @@ const ChatInputBoxWrapper = styled.div`
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  margin-bottom: 16px;
+  margin: 0 16px 16px;
 `;
 
 const ChatMessageBox = styled.div`
@@ -72,6 +74,7 @@ const ThreadDrawerCol = styled(Col)`
   display: flex;
   flex-direction: column;
   border-left: 1px solid #e0e0e0;
+  width: 280px;
 `;
 
 const ThreadDrawerHeader = styled(Flex)`
@@ -168,7 +171,8 @@ const ChannelChatBox = ({
   };
 
   return (
-    <Box vertical style={{}}>
+    <Box flex="1'0 auto">
+      '{' '}
       <ChannelChatHeader>
         <Space>
           <img
@@ -192,15 +196,16 @@ const ChannelChatBox = ({
         </Space>
       </ChannelChatHeader>
       {/* ChannelChatBody */}
-      <Row style={{ flexGrow: 1 }}>
+      <Row style={{ flexGrow: 1 }} wrap={false}>
         {/* ChannelChat main chat column (excluding threadbox column) */}
         <Col
-          flex="auto"
+          flex="1 0 auto"
           style={{
             position: 'relative',
             display: 'flex',
             flexDirection: 'column',
             height: 'calc( 100vh - 48px - 64px )',
+            width: 380,
           }}
         >
           {/*  chat box */}
@@ -248,7 +253,7 @@ const ChannelChatBox = ({
 
         {/* Replies */}
         {selectedMessage && (
-          <ThreadDrawerCol flex="280px">
+          <ThreadDrawerCol flex="0 0 auto">
             <ThreadDrawerHeader justify="space-between" align="center">
               <span style={{ fontSize: 14, fontWeight: 600 }}>Thread</span>
               <Button
@@ -258,43 +263,48 @@ const ChannelChatBox = ({
               />
             </ThreadDrawerHeader>
             {/*  selected msg*/}
-            <MessageLine
-              message={selectedMessage}
-              displayMode="thread-full"
-              onReaction={handleReaction}
-              currentUser={commonStore.moderator}
-            />
-            <Divider plain orientation="left">
-              {selectedMessage.thread_info?.reply_count ?? 0} replies
-            </Divider>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                flexGrow: 1,
-                height: 1,
-              }}
-              ref={replyMessageBoxRef}
-            >
-              <ChannelChatRepliesList
-                replies={replies}
-                onReaction={handleReaction}
-                currentUser={commonStore.moderator}
-                loading={repliesLoading}
-              />
-              <ChatInputBox
-                chatBoxBorderColor={chatBoxBorderColor}
-                onSendMessage={(message) =>
-                  onSendMessage(message, selectedMessage)
-                }
-                onUpload={onReplyUpload}
-                uploadFiles={replyUploadFiles}
-                onUploadRemove={onReplyUploadRemove}
-                style={{
-                  margin: '10px 16px 16px',
-                }}
-              />
-            </div>
+            {repliesLoading ? (
+              <Spin spinning={true} style={{ margin: '50px 0' }} />
+            ) : (
+              <>
+                <MessageLine
+                  message={selectedMessage}
+                  displayMode="thread-full"
+                  onReaction={handleReaction}
+                  currentUser={commonStore.moderator}
+                />
+                <Divider plain orientation="left">
+                  {selectedMessage.thread_info?.reply_count ?? 0} replies
+                </Divider>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    flexGrow: 1,
+                    height: 1,
+                  }}
+                  ref={replyMessageBoxRef}
+                >
+                  <ChannelChatRepliesList
+                    replies={replies}
+                    onReaction={handleReaction}
+                    currentUser={commonStore.moderator}
+                  />
+                  <ChatInputBox
+                    chatBoxBorderColor={chatBoxBorderColor}
+                    onSendMessage={(message) =>
+                      onSendMessage(message, selectedMessage)
+                    }
+                    onUpload={onReplyUpload}
+                    uploadFiles={replyUploadFiles}
+                    onUploadRemove={onReplyUploadRemove}
+                    style={{
+                      margin: '10px 16px 16px',
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </ThreadDrawerCol>
         )}
       </Row>

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Layout, theme } from 'antd';
+import { Row, theme } from 'antd';
 import { CommonStoreContext } from '../../index';
 import { observer } from 'mobx-react-lite';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -125,7 +125,8 @@ const ChannelChatPage = () => {
   }
 
   return (
-    <Layout
+    <Row
+      wrap={false}
       style={{
         flexGrow: 1,
         height: '100%',
@@ -173,7 +174,7 @@ const ChannelChatPage = () => {
           onClose={() => setChannelInfoRightSideBarVisible(false)}
         />
       )}
-    </Layout>
+    </Row>
   );
 };
 

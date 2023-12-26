@@ -1,4 +1,4 @@
-import { Button, Flex, List, Space, theme, Typography } from 'antd';
+import { Button, Col, Flex, List, Space, theme, Typography } from 'antd';
 import {
   ArrowLeftOutlined,
   SearchOutlined,
@@ -13,9 +13,7 @@ import { type ChannelListRes } from '@wingflo/js-sdk';
 
 const { Text, Title } = Typography;
 
-const Box = styled.div`
-  width: 320px;
-  min-width: 320px;
+const Box = styled(Col)`
   background-color: #fff;
   border-right: 1px solid #e0e0e0;
 `;
@@ -51,7 +49,7 @@ export const ChannelListSideBar = ({
   const { token } = theme.useToken();
 
   return (
-    <Box>
+    <Box flex="320px">
       <Flex
         align="center"
         justify="space-between"

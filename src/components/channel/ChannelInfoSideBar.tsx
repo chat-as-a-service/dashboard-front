@@ -1,6 +1,7 @@
 import {
   Badge,
   Button,
+  Col,
   Collapse,
   Descriptions,
   Drawer,
@@ -15,8 +16,9 @@ import styled from 'styled-components';
 
 const { Text, Title } = Typography;
 
-const ChannelInfoRightSideBar = styled(Flex)`
-  width: 320px;
+const ChannelInfoRightSideBar = styled(Col)`
+  display: flex;
+  flex-direction: column;
   border-left: 1px solid #e0e0e0;
   position: relative;
 `;
@@ -44,8 +46,8 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false);
 
   return (
-    <ChannelInfoRightSideBar vertical>
-      {/*  channel info */}
+    <ChannelInfoRightSideBar flex="320'x">
+      ' {/*  channel info */}
       <ChannelInfoRightSideBarHeader justify="space-between" align="center">
         <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
           Channel information
@@ -109,7 +111,6 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
           defaultActiveKey={['1']}
         />
       </div>
-
       <Drawer
         title={
           <Flex justify="space-between" style={{ height: 63 }} align="center">

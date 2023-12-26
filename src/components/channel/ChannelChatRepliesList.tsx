@@ -3,15 +3,13 @@ import { MessageLine } from '../message/MessageLine';
 import { MessageType } from '../../types/message';
 import { UserListRes } from '../../types/user';
 import { ReactionOpType } from '../../types/reaction';
-import { Empty, Spin } from 'antd';
+import { Empty } from 'antd';
 
 export const ChannelChatRepliesList = ({
-  loading,
   replies,
   onReaction,
   currentUser,
 }: {
-  loading: boolean;
   replies: MessageType[];
   onReaction: (
     message: MessageType,
@@ -20,9 +18,6 @@ export const ChannelChatRepliesList = ({
   ) => void;
   currentUser: UserListRes | null;
 }) => {
-  if (loading) {
-    return <Spin spinning={true} style={{ margin: '50px 0' }} />;
-  }
   return (
     <div>
       {replies.length === 0 && (

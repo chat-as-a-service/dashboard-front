@@ -50,6 +50,7 @@ const InnerBox = styled.div`
 
 const LeftCol = styled.div`
   width: 45px;
+  flex: 0 0 auto;
 `;
 
 const MessageTimestamp = styled.time`
@@ -257,7 +258,7 @@ export const MessageLine = ({
                 <Avatar size={32} src={defaultUserImage} />
               )}
             </LeftCol>
-            <div>
+            <div style={{ flexGrow: 1 }}>
               {(displayMode === 'full' ||
                 displayMode === 'thread-full' ||
                 displayMode === 'thread-compact') && (
