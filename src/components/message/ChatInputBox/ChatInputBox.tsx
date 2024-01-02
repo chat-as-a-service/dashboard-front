@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import {
   Button,
   ConfigProvider,
@@ -8,34 +8,21 @@ import {
   Typography,
   Upload,
 } from 'antd';
-import defaultUserImg from '../../static/images/default-user-image-1.svg';
+import defaultUserImg from '../../../static/images/default-user-image-1.svg';
 import {
   PaperClipOutlined,
   SendOutlined,
   SettingFilled,
 } from '@ant-design/icons';
-import styled from 'styled-components';
-import { CustomUploadFile } from '../../types/attachment';
-import { useOutsideAlerter } from '../../hooks/useOutsideAlerter';
+import { CustomUploadFile } from '../../../types/attachment';
+import { useOutsideAlerter } from '../../../hooks/useOutsideAlerter';
+import SC from './ChatInputBox.styles';
+import { observer } from 'mobx-react-lite';
+import { ChatStoreContext } from '../../../pages/application/ApplicationRoot';
 
 const { Text } = Typography;
 
-const Box = styled.div<{
-  $focusBorderColor: string;
-  $focused: boolean;
-}>`
-  max-width: 956px;
-  padding: 16px 8px 8px;
-  border-radius: 4px;
-  box-shadow:
-    ${(props) =>
-        props.$focused && `0 0 0 1px ${props.$focusBorderColor} inset,`}
-      0 1px 5px 0 rgba(13, 13, 13, 0.12),
-    0 0 1px 0 rgba(13, 13, 13, 0.16),
-    0 2px 2px 0 rgba(13, 13, 13, 0.08);
-`;
-
-export const ChatInputBox = ({
+const ChatInputBox = ({
   chatBoxBorderColor,
   style,
   onSendMessage,
@@ -53,10 +40,13 @@ export const ChatInputBox = ({
   const [chatBoxFocused, setChatBoxFocused] = useState(false);
   const [chatInput, setChatInput] = useState('');
 
+  const chatStore = useContext(ChatStoreContext);
+
   const chatBoxRef = useRef(null);
   useOutsideAlerter(chatBoxRef, () => setChatBoxFocused(false));
+
   return (
-    <Box
+    <SC.Box
       $focusBorderColor={chatBoxBorderColor}
       $focused={chatBoxFocused}
       onClick={() => setChatBoxFocused(true)}
@@ -71,6 +61,7 @@ export const ChatInputBox = ({
               width={16}
               height={16}
               style={{ borderRadius: '50%' }}
+              alt="user"
             />
             <Text strong style={{ fontSize: 12 }}>
               user
@@ -99,18 +90,20 @@ export const ChatInputBox = ({
           placeholder="Enter message"
           value={chatInput}
           onChange={setChatInput}
-          onKeyPress={(e) => {
-            if (
-              e.currentTarget.value.trim() !== '' &&
-              e.key === 'Enter' &&
-              !e.shiftKey
-            ) {
-              onSendMessage(e.currentTarget.value);
-              setChatInput('');
+          onPressEnter={(e) => {
+            if (chatStore.sendMessageState === 'pending') return;
+            const inputTextArea = e.currentTarget;
+            if (e.shiftKey) {
+              inputTextArea.scrollTop = inputTextArea.scrollHeight + 1000;
+            } else if (inputTextArea.value.trim() === '') {
+              e.preventDefault();
+              return;
             } else {
-              setChatInput(e.currentTarget.value);
+              e.preventDefault();
+              onSendMessage(inputTextArea.value);
+              setChatInput('');
             }
-            // e.preventDefault();
+            inputTextArea.focus();
           }}
         />
       </ConfigProvider>
@@ -137,9 +130,12 @@ export const ChatInputBox = ({
             icon={<SendOutlined />}
             disabled={chatInput.length === 0}
             onClick={() => onSendMessage(chatInput)}
+            loading={chatStore.sendMessageState === 'pending'}
           />
         </Space>
       </Flex>
-    </Box>
+    </SC.Box>
   );
 };
+
+export default observer(ChatInputBox);

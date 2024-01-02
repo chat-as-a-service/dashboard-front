@@ -34,6 +34,7 @@ class ChatStore {
 
   chatMessages = observable<MessageType>([]);
   chatMessagesState: AsyncOpState = 'done';
+  sendMessageState: AsyncOpState = 'done';
 
   chatRepliesState: AsyncOpState = 'done';
   selectedMessage?: MessageType;
@@ -219,6 +220,7 @@ class ChatStore {
       console.warn('chat channel is not selected, cannot send message');
       return;
     }
+    this.sendMessageState = 'pending';
 
     yield this.chatChannel.sendMessage({
       message: message,
@@ -237,6 +239,8 @@ class ChatStore {
     } else {
       this.replyUploadFiles = [];
     }
+
+    this.sendMessageState = 'done';
   }
 
   selectChannel(channel: ChannelListRes) {
