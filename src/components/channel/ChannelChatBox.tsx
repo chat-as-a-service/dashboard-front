@@ -20,7 +20,6 @@ import React, { SetStateAction, useContext } from 'react';
 import styled from 'styled-components';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
-import ChatInputBox from '../message/ChatInputBox';
 import { ChannelChatRepliesList } from './ChannelChatRepliesList';
 import ChannelChatList from './ChannelChatList';
 import { observer } from 'mobx-react-lite';
@@ -29,6 +28,7 @@ import { flowResult } from 'mobx';
 import { CommonStoreContext } from '../../index';
 import { ReactionOpType } from '../../types/reaction';
 import { Channel as WFChannel } from '@wingflo/js-sdk';
+import ChatInputBox from '../message/ChatInputBoxx';
 import MessageLine from '../message/MessageLine';
 
 const { Title } = Typography;
