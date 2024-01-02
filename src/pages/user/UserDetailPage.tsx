@@ -74,9 +74,7 @@ const UserDetailPage = () => {
                 style={{ marginRight: 5 }}
                 onClick={() => navigate(`/${selectedApplication?.uuid}/users`)}
               />
-              <Title level={4} style={{ margin: 0 }}>
-                {user?.username}
-              </Title>
+              <Title level={1}>{user?.username}</Title>
             </Space>
             <Space>
               <Button
@@ -94,7 +92,9 @@ const UserDetailPage = () => {
             labelStyle={{
               width: '50%',
               border: 0,
-              fontWeight: 'bold',
+              fontWeight: 500,
+              fontSize: 16,
+              padding: 24,
             }}
             bordered
             items={[
@@ -102,15 +102,20 @@ const UserDetailPage = () => {
                 key: 'username',
                 label: 'Username',
                 children: (
-                  <Input size="large" disabled value={user?.username} />
+                  <Input
+                    size="large"
+                    disabled
+                    value={user?.username}
+                    style={{ cursor: 'text' }}
+                  />
                 ),
               },
               {
                 key: 'created_at',
                 label: 'Created at',
-                children:
-                  user?.created_at &&
-                  Utils.unixTsToDateTimeString(user.created_at),
+                children: user?.created_at && (
+                  <Text>{Utils.unixTsToDateTimeString(user.created_at)}</Text>
+                ),
               },
               {
                 key: 'nickname',
@@ -145,7 +150,9 @@ const UserDetailPage = () => {
             labelStyle={{
               width: '50%',
               border: 0,
-              fontWeight: 'bold',
+              fontWeight: 500,
+              fontSize: 16,
+              padding: 24,
             }}
             bordered
             items={[

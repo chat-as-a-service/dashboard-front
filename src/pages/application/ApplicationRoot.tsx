@@ -1,7 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Layout, Menu, MenuProps } from 'antd';
+import { Button, Layout, Menu, MenuProps } from 'antd';
 import { observer } from 'mobx-react-lite';
 import {
+  DoubleLeftOutlined,
+  DoubleRightOutlined,
   HomeOutlined,
   MessageOutlined,
   SettingOutlined,
@@ -25,20 +27,40 @@ const { Content, Sider } = Layout;
 const SideMenuHeader = styled.div`
   display: flex;
   align-items: center;
-  height: 35px;
+  width: 100%;
+  height: 32px;
   color: #858585;
   user-select: none;
   text-transform: uppercase;
   font-size: 11px;
   font-weight: 600;
   line-height: 1.09;
-  transition:
-    color 0.15s cubic-bezier(0.4, 0, 0.2, 1) 0s,
-    height,
-    padding;
-  padding: 16px 16px 8px 20px;
-  white-space: nowrap;
+  padding: 8px 16px 8px 20px;
 `;
+
+const CustomSider = styled(Sider)`
+  border-right: 1px solid #dedede;
+  position: relative;
+  padding: 8px 0;
+`;
+const CustomMenu = styled(Menu)`
+  background: #f7f7f7;
+  height: 100%;
+  border-right: 0;
+  font-weight: 500;
+
+  & li.ant-menu-item-selected {
+    font-weight: 600;
+    background-color: #d9e6ff;
+  }
+`;
+
+const SiderCollapseBtn = styled(Button)<{ $collapsed: boolean }>`
+  position: absolute;
+  top: 6px;
+  right: ${({ $collapsed }) => ($collapsed ? '12px' : '8px')};
+`;
+
 const chatStore = new ChatStore();
 
 export const ChatStoreContext = createContext<ChatStore>(chatStore);
@@ -102,35 +124,41 @@ const ApplicationRoot = () => {
 
   return (
     <ChatStoreContext.Provider value={chatStore}>
-      <Layout style={{ flexGrow: 1, height: '100%' }}>
-        <Sider
-          width={250}
+      <Layout style={{ flexGrow: 1, height: '100%', width: '100%' }}>
+        <CustomSider
+          width={216}
+          collapsedWidth={56}
           theme="light"
-          style={{
-            borderRight: '1px solid #dedede',
-            background: '#F7F7F7',
-          }}
           collapsed={commonStore.appSidebarCollapsed}
         >
-          {commonStore.appSidebarCollapsed ? null : (
-            <SideMenuHeader>
-              <span>APPLICATION</span>
-            </SideMenuHeader>
-          )}
+          <SideMenuHeader>
+            {!commonStore.appSidebarCollapsed && <span>APPLICATION</span>}
+          </SideMenuHeader>
+          <SiderCollapseBtn
+            $collapsed={commonStore.appSidebarCollapsed}
+            icon={
+              commonStore.appSidebarCollapsed ? (
+                <DoubleRightOutlined />
+              ) : (
+                <DoubleLeftOutlined />
+              )
+            }
+            type="text"
+            onClick={() =>
+              (commonStore.appSidebarCollapsed =
+                !commonStore.appSidebarCollapsed)
+            }
+          />
 
-          <Menu
+          <CustomMenu
             mode="inline"
-            defaultSelectedKeys={['1']}
-            defaultOpenKeys={['sub1']}
-            style={{ height: '100%', borderRight: 0, background: '#F7F7F7' }}
             items={menuItems}
             onSelect={(item) => {
-              console.log(item);
               selectSideMenu(item.key);
             }}
             selectedKeys={[selectedSideMenu]}
           />
-        </Sider>
+        </CustomSider>
         <Content
           style={{
             padding:
@@ -138,10 +166,20 @@ const ApplicationRoot = () => {
               commonStore.appRootLayoutNoPadding
                 ? 0
                 : '32px 40px 80px 40px',
-            background: '#fff',
+            display: 'flex',
+            overflow: 'auto',
           }}
         >
-          <Outlet context={{ application: commonStore.selectedApplication }} />
+          <div
+            style={{
+              flex: '1 0 auto',
+              width: 1000,
+            }}
+          >
+            <Outlet
+              context={{ application: commonStore.selectedApplication }}
+            />
+          </div>
         </Content>
       </Layout>
     </ChatStoreContext.Provider>

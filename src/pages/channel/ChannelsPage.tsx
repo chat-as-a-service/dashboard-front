@@ -1,21 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
-import {
-  Button,
-  Dropdown,
-  Flex,
-  Input,
-  notification,
-  Select,
-  Space,
-  Table,
-  Typography,
-} from 'antd';
-import {
-  DeleteOutlined,
-  MoreOutlined,
-  PlusOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
+import { Button, Dropdown, Flex, Input, notification, Select, Space, Table, Typography } from 'antd';
+import { DeleteOutlined, MoreOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import { useNavigate } from 'react-router-dom';
@@ -28,8 +13,27 @@ import { AddChannelModal } from '../../components/channel/AddChannelModal';
 import { UserRepository } from '../../repository/UserRepository';
 import { UserListRes } from '../../types/user';
 import { ChatStoreContext } from '../application/ApplicationRoot';
+import styled from 'styled-components';
 
 const { Text, Title, Paragraph } = Typography;
+
+const ChannelName = styled(Text)`
+  font-weight: 500;
+`;
+
+const ChannelsTable = styled(Table)`
+  & tbody td:nth-child(2) {
+    cursor: pointer;
+
+    &:hover ${ChannelName} {
+      color: var(--ant-color-primary);
+      text-decoration: underline;
+    }
+  }
+
+  & tbody td:nth-child(2) {
+  }
+`;
 
 const ChannelsPage = () => {
   const [isAddChannelModalOpen, setAddChannelModalOpen] = React.useState(false);
@@ -79,22 +83,26 @@ const ChannelsPage = () => {
       title: 'Name',
       dataIndex: 'name',
       render: (text, record) => (
-        <Space align="center">
+        <Flex align="center" gap={12}>
           <img
+'      '    alt="Channel profile"
             src={DefaultChannelImg}
             width={32}
             height={32}
             style={{ borderRadius: 4 }}
           />
+
           <Space.Compact direction="vertical">
-            <Text strong>{text}</Text>
-            <Text type="secondary">{record.uuid}</Text>
+            <ChannelName>{text}</ChannelName>
+            <Text type='secondary' style={{ fontSize: 12 }}>
+              {record.uuid}
+            </Text>
           </Space.Compact>
-        </Space>
+        </Flex>
       ),
-      onCell: (record, rowIdx) => {
+      onCell: (record) => {
         return {
-          onClick: (event) => {
+          onClick: () => {
             if (commonStore.moderator == null) {
               api.error({
                 message: 'Please select a moderator',
@@ -111,7 +119,7 @@ const ChannelsPage = () => {
     {
       title: 'Members',
       dataIndex: 'member_count',
-      render: (text, record) => (
+      render: (_, record) => (
         <Space align="center">
           <UserOutlined />
           <Text>
@@ -170,10 +178,8 @@ const ChannelsPage = () => {
   return (
     <div>
       {contextHolder}
-      <Flex justify="space-between">
-        <Title level={4} style={{ margin: '0 0 20px 0' }}>
-          Channels
-        </Title>
+      <Flex justify='space-between' style={{ marginBottom: 20 }}>
+        <Title level={1}>Channels</Title>
         <Space>
           <Space>
             <Text type="secondary">Moderator: </Text>
@@ -220,7 +226,7 @@ const ChannelsPage = () => {
         />
       </Space>
 
-      <Table
+      <ChannelsTable
         rowSelection={rowSelection}
         columns={columns}
         dataSource={chatStore.channels}

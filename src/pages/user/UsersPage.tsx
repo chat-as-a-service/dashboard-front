@@ -11,9 +11,19 @@ import { observer } from 'mobx-react-lite';
 import { Utils } from '../../core/Util';
 import { AddUserModal } from '../../components/user/AddUserModal';
 import defaultUserImage from '../../static/images/default-user-image-1.svg';
+import styled from 'styled-components';
 
 const { Text, Title } = Typography;
 
+const UserLink = styled(Link)`
+  flex: 1 0 auto;
+  color: var(--ant-color-text-base);
+
+  &:hover {
+    color: var(--ant-color-primary);
+    text-decoration: underline;
+  }
+`;
 const UsersPage = () => {
   const [isAddUserModalOpen, setAddUserModalOpen] = React.useState(false);
   const [isUsersLoading, setUsersLoading] = React.useState(false);
@@ -81,11 +91,13 @@ const UsersPage = () => {
       title: 'Username',
       dataIndex: 'username',
       render: (text, record) => (
-        <Link
-          to={`/${commonStore.selectedApplication?.uuid}/users/${record.username}`}
-        >
-          {text}
-        </Link>
+        <Flex>
+          <UserLink
+            to={`/${commonStore.selectedApplication?.uuid}/users/${record.username}`}
+          >
+            {text}
+          </UserLink>
+        </Flex>
       ),
     },
     {
@@ -112,16 +124,13 @@ const UsersPage = () => {
 
   return (
     <div>
-      <Flex justify="space-between">
-        <Title level={4} style={{ margin: '0 0 20px 0' }}>
-          Users
-        </Title>
+      <Flex justify="space-between" style={{ marginBottom: 20 }}>
+        <Title level={1}>Users</Title>
         <Space>
           <Button
             disabled={selectedRowKeys.length === 0}
             type="primary"
             icon={<DeleteOutlined />}
-            // onClick={() => set(true)}
           >
             Delete
           </Button>

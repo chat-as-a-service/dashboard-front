@@ -17,7 +17,7 @@ class CommonStore {
     makeAutoObservable(this);
   }
 
-  reset() {
+  signOut() {
     runInAction(() => {
       this._account = null;
       this._applications = [];

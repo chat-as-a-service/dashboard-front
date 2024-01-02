@@ -25,6 +25,8 @@ const LinkPreview = ({
           <img
             alt={message.og_tag.image_alt ?? message.og_tag.title}
             src={message.og_tag.image}
+            width={isThread ? 200 : 300}
+            height={isThread ? 105 : 157.5}
           />
         )
       }

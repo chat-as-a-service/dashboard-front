@@ -65,7 +65,7 @@ const SignInPage = () => {
   };
 
   return (
-    <Layout style={{ height: '100vh' }}>
+    <Layout style={{ height: '100%' }}>
       <Header
         style={{ display: 'flex', alignItems: 'center', paddingLeft: 20 }}
       >

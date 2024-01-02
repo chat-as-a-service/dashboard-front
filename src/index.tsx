@@ -151,22 +151,87 @@ injectStores({
 });
 export const CommonStoreContext = createContext<CommonStore>(commonStore);
 
-const colorPrimary = 'rgb(30 101 198)';
+// const colorPrimary = 'rgb(30 101 198)';
+
+const colorPrimary = '#3B60E4';
 root.render(
   <ConfigProvider
     theme={{
+      cssVar: true,
       token: {
         colorPrimary: colorPrimary,
+        colorInfo: colorPrimary,
+        colorSuccess: '#00e070',
+        colorWarning: '#ffdd1f',
+        colorError: '#e72535',
+        colorTextBase: '#0d0d0d',
+        colorBorder: '#e0e0e0',
+        colorBorderSecondary: '#E0E0E0',
+        colorBgLayout: '#ffffff',
+        borderRadius: 4,
+        colorBgContainer: '#ffffff',
         fontFamily: 'Inter, sans-serif',
+        colorText: '#0d0d0d',
+        lineHeight: 1.43,
       },
       components: {
+        Button: {
+          fontWeight: 600,
+          defaultColor: 'rgb(94, 94, 94)',
+          defaultBorderColor: 'rgb(204, 204, 204)',
+          borderColorDisabled: 'rgb(224, 224, 224)',
+          contentFontSizeLG: 14,
+        },
+        Divider: {
+          colorSplit: 'rgb(224, 224, 224)',
+        },
+        Input: {
+          colorBorder: 'rgb(204, 204, 204)',
+          colorText: 'rgb(13, 13, 13)',
+          fontSizeLG: 14,
+          colorBgContainerDisabled: 'rgb(224, 224, 224)',
+          colorTextDisabled: 'rgb(94, 94, 94)',
+          paddingInlineLG: 16,
+        },
         Table: {
-          headerBg: 'rgba(0,0,0,0)',
-          borderColor: '#E0E0E0',
+          headerBg: 'rgb(255, 255, 255)',
+
           cellPaddingBlock: 12,
+          headerColor: 'rgb(13, 13, 13)',
+          headerSplitColor: 'rgb(255, 255, 255)',
+          borderColor: 'rgb(224, 224, 224)',
+        },
+        Modal: {
+          titleFontSize: 20,
+          titleLineHeight: 1.2,
         },
         Layout: {
           headerBg: colorPrimary,
+          siderBg: '#f7f7f7',
+          triggerBg: '#f7f7f7',
+          triggerColor: '#5E5E5E',
+        },
+        Menu: {
+          itemBorderRadius: 8,
+          itemMarginInline: 8,
+        },
+        Descriptions: {
+          colorSplit: '#E0E0E0',
+          colorTextSecondary: '#0D0D0D',
+        },
+        Checkbox: {
+          colorBorder: 'rgb(94, 94, 94)',
+          borderRadiusSM: 2,
+          lineWidth: 2,
+          controlInteractiveSize: 18,
+        },
+        Typography: {
+          titleMarginTop: 0,
+          titleMarginBottom: 0,
+          fontSizeHeading3: 16,
+        },
+        Select: {
+          optionSelectedFontWeight: 600,
         },
       },
     }}

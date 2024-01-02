@@ -1,5 +1,4 @@
 import React, { SetStateAction } from 'react';
-import MessageLine from '../message/MessageLine/MessageLine';
 import { MessageType } from '../../types/message';
 import { observer } from 'mobx-react-lite';
 import { UserListRes } from '../../types/user';
@@ -7,13 +6,14 @@ import { ReactionOpType } from '../../types/reaction';
 import dayjs from 'dayjs';
 import { Empty, notification, Spin } from 'antd';
 import styled from 'styled-components';
+import MessageLine from '../message/MessageLine';
 
 const Box = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  //height: 100%;
   width: 100%;
 `;
 

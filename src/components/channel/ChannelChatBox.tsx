@@ -18,7 +18,6 @@ import {
 } from '@ant-design/icons';
 import React, { SetStateAction, useContext } from 'react';
 import styled from 'styled-components';
-import MessageLine from '../message/MessageLine/MessageLine';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
 import { ChatInputBox } from '../message/ChatInputBox';
@@ -30,6 +29,7 @@ import { flowResult } from 'mobx';
 import { CommonStoreContext } from '../../index';
 import { ReactionOpType } from '../../types/reaction';
 import { Channel as WFChannel } from '@wingflo/js-sdk';
+import MessageLine from '../message/MessageLine';
 
 const { Title } = Typography;
 const Box = styled(Col)`
@@ -64,9 +64,7 @@ const ChatInputBoxWrapper = styled.div`
 `;
 
 const ChatMessageBox = styled.div`
-  overflow-y: auto;
   padding-bottom: 16px;
-  height: 100%;
   width: 100%;
 `;
 
@@ -198,7 +196,6 @@ const ChannelChatBox = ({
           {/*  chat box */}
           <ChatMessageBoxWrapper className="chat-message-box-wrapper">
             <ChatMessageBox ref={chatMessageBoxRef}>
-              {/*<ChatMessageBoxOverlay />*/}
               <ChannelChatList
                 loading={messagesLoading}
                 messages={messages}
