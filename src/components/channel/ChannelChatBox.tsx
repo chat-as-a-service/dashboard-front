@@ -20,7 +20,7 @@ import React, { SetStateAction, useContext } from 'react';
 import styled from 'styled-components';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
-import { ChatInputBox } from '../message/ChatInputBox';
+import ChatInputBox from '../message/ChatInputBox';
 import { ChannelChatRepliesList } from './ChannelChatRepliesList';
 import ChannelChatList from './ChannelChatList';
 import { observer } from 'mobx-react-lite';

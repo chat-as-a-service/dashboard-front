@@ -3,17 +3,17 @@ import { MessageType } from '../../types/message';
 import { observer } from 'mobx-react-lite';
 import { UserListRes } from '../../types/user';
 import { ReactionOpType } from '../../types/reaction';
-import dayjs from 'dayjs';
 import { Empty, notification, Spin } from 'antd';
 import styled from 'styled-components';
+import dayjs from 'dayjs';
 import MessageLine from '../message/MessageLine';
 
 const Box = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  //height: 100%;
+  justify-content: end;
+  height: 100%;
   width: 100%;
 `;
 
@@ -48,7 +48,9 @@ const ChannelChatList = ({
   return (
     <Box>
       {notificationContextHolder}
-      {messages.length === 0 && !loading && <Empty description="No messages" />}
+      {messages.length === 0 && !loading && (
+        <Empty style={{ margin: '50px 0' }} description="No Messages" />
+      )}
       {messages.map((message, index) => {
         let displayFull = false;
         let firstMsgOfTheDay = false;
