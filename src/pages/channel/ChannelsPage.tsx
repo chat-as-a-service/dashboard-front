@@ -1,6 +1,21 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Button, Dropdown, Flex, Input, notification, Select, Space, Table, Typography } from 'antd';
-import { DeleteOutlined, MoreOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Dropdown,
+  Flex,
+  Input,
+  notification,
+  Select,
+  Space,
+  Table,
+  Typography,
+} from 'antd';
+import {
+  DeleteOutlined,
+  MoreOutlined,
+  PlusOutlined,
+  UserOutlined,
+} from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { TableRowSelection } from 'antd/es/table/interface';
 import { useNavigate } from 'react-router-dom';
@@ -85,7 +100,7 @@ const ChannelsPage = () => {
       render: (text, record) => (
         <Flex align="center" gap={12}>
           <img
-'      '    alt="Channel profile"
+            alt="Channel profile"
             src={DefaultChannelImg}
             width={32}
             height={32}
@@ -94,7 +109,7 @@ const ChannelsPage = () => {
 
           <Space.Compact direction="vertical">
             <ChannelName>{text}</ChannelName>
-            <Text type='secondary' style={{ fontSize: 12 }}>
+            <Text type="secondary" style={{ fontSize: 12 }}>
               {record.uuid}
             </Text>
           </Space.Compact>
@@ -178,7 +193,7 @@ const ChannelsPage = () => {
   return (
     <div>
       {contextHolder}
-      <Flex justify='space-between' style={{ marginBottom: 20 }}>
+      <Flex justify="space-between" style={{ marginBottom: 20 }}>
         <Title level={1}>Channels</Title>
         <Space>
           <Space>
