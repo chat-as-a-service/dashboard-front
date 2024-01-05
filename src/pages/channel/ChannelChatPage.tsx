@@ -3,9 +3,8 @@ import { Row, theme } from 'antd';
 import { CommonStoreContext } from '../../index';
 import { observer } from 'mobx-react-lite';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ChannelListSideBar } from '../../components/channel/ChannelListSideBar';
 import ChannelChatBox from '../../components/channel/ChannelChatBox';
-import { ChannelInfoSideBar } from '../../components/channel/ChannelInfoSideBar';
+import ChannelInfoSideBar from '../../components/channel/ChannelInfoSideBar/ChannelInfoSideBar';
 import { ChannelListRes } from '@wingflo/js-sdk';
 import { MessageType } from '../../types/message';
 import { CustomUploadFile } from '../../types/attachment';
@@ -13,6 +12,7 @@ import { ChatStoreContext } from '../application/ApplicationRoot';
 import { flowResult } from 'mobx';
 import { useScrollBottom } from '../../hooks/useScrollBottom';
 import styled from 'styled-components';
+import ChannelListSideBar from '../../components/channel/ChannelListSideBar';
 
 const ChatDropdownMask = styled.div`
   position: absolute;
@@ -26,6 +26,7 @@ const ChatDropdownMask = styled.div`
 const ChannelChatPage = () => {
   const [channelInfoRightSideBarVisible, setChannelInfoRightSideBarVisible] =
     useState(true);
+  const [channelListCollapsed, setChannelListCollapsed] = useState(false);
   const [chatDropdownMaskVisible, setChatDropdownMaskVisible] = useState(false);
 
   const commonStore = useContext(CommonStoreContext);
@@ -146,6 +147,8 @@ const ChannelChatPage = () => {
       {chatDropdownMaskVisible && <ChatDropdownMask />}
 
       <ChannelListSideBar
+        collapsed={channelListCollapsed}
+        onCollapse={setChannelListCollapsed}
         application={selectedApplication}
         channels={chatStore.channels}
         selectedChannel={chatStore.selectedChatChannel}
