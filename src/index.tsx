@@ -229,9 +229,13 @@ root.render(
           titleMarginTop: 0,
           titleMarginBottom: 0,
           fontSizeHeading3: 16,
+          fontWeightStrong: 600,
         },
         Select: {
           optionSelectedFontWeight: 600,
+        },
+        Badge: {
+          statusSize: 8,
         },
       },
     }}

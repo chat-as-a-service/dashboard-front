@@ -4,15 +4,16 @@ import {
   Col,
   Collapse,
   Descriptions,
-  Drawer,
   Flex,
-  List,
   Typography,
 } from 'antd';
-import { ArrowLeftOutlined, CloseOutlined } from '@ant-design/icons';
-import { Utils } from '../../core/Util';
-import React, { useState } from 'react';
+import { CloseOutlined } from '@ant-design/icons';
+import { Utils } from '../../../core/Util';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
+import ChannelMembersDrawer from '../ChannelMembersDrawer';
+import { observer } from 'mobx-react-lite';
+import SideBarItem from './SideBarItem';
 
 const { Text, Title } = Typography;
 
@@ -21,6 +22,7 @@ const ChannelInfoRightSideBar = styled(Col)`
   flex-direction: column;
   border-left: 1px solid #e0e0e0;
   position: relative;
+  overflow: hidden;
 `;
 
 const ChannelInfoRightSideBarHeader = styled(Flex)`
@@ -30,23 +32,12 @@ const ChannelInfoRightSideBarHeader = styled(Flex)`
   width: 100%;
 `;
 
-const ChannelMemberListItem = styled(List.Item)`
-  padding: 0 16px !important;
-  display: flex !important;
-  align-items: center !important;
-  height: 36px;
-  line-height: 1.43;
-
-  &:hover {
-    cursor: pointer;
-    background: rgba(13, 13, 13, 0.04);
-  }
-`;
-export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
+const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
   const [membersDrawerOpen, setMembersDrawerOpen] = useState(false);
+  const sideBarRef = useRef(null);
 
   return (
-    <ChannelInfoRightSideBar flex="320px">
+    <ChannelInfoRightSideBar flex="320px" ref={sideBarRef}>
       {/*  channel info */}
       <ChannelInfoRightSideBarHeader justify="space-between" align="center">
         <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
@@ -63,6 +54,7 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
           }}
           collapsible="header"
           expandIconPosition="end"
+          defaultActiveKey={['information', 'moderation']}
           items={[
             {
               key: 'information',
@@ -91,32 +83,15 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
               ),
             },
             {
-              key: 'members',
-              label: <Text strong>Members</Text>,
-              onClick: () => setMembersDrawerOpen(true),
-              extra: (
-                <Badge
-                  count={`1 / 100`}
-                  color="#ECECEC"
-                  style={{
-                    color: '#5E5E5E',
-                    fontSize: 11,
-                    fontWeight: 400,
-                  }}
-                />
-              ),
+              key: 'moderation',
+              label: <Text strong>Channel moderation</Text>,
+              onClick: () => {}, // todo
             },
           ]}
-          defaultActiveKey={['1']}
         />
-      </div>
-      <Drawer
-        title={
-          <Flex justify="space-between" style={{ height: 63 }} align="center">
-            <Title level={5} style={{ margin: 0, fontWeight: 700 }}>
-              Members
-            </Title>
-
+        <SideBarItem
+          title="Members"
+          extra={
             <Badge
               count={`1 / 100`}
               color="#ECECEC"
@@ -126,46 +101,45 @@ export const ChannelInfoSideBar = ({ onClose }: { onClose: () => void }) => {
                 fontWeight: 400,
               }}
             />
-          </Flex>
-        }
-        getContainer={false}
-        placement="right"
-        onClose={() => setMembersDrawerOpen(false)}
-        open={membersDrawerOpen}
-        width="100%"
-        closeIcon={<ArrowLeftOutlined />}
-        mask={false}
-        contentWrapperStyle={{ boxShadow: 'none' }}
-        drawerStyle={{
-          outline: 'none',
-        }}
-        styles={{
-          header: {
-            borderBottom: '1px solid #e0e0e0',
-            padding: '0 16px 0 8px',
-          },
-          body: { padding: 0 },
-        }}
-      >
-        <Typography.Paragraph
-          color="#858585"
-          style={{ fontSize: 12, fontWeight: 600, padding: '6px 16px' }}
-        >
-          Members
-        </Typography.Paragraph>
-
-        <List
-          itemLayout="vertical"
-          dataSource={[1]}
-          renderItem={(channelMember, idx) => {
-            return (
-              <ChannelMemberListItem key={idx}>
-                <Badge status="default" text={<strong>Member 1</strong>} />
-              </ChannelMemberListItem>
-            );
-          }}
+          }
+          onClick={() => setMembersDrawerOpen(true)}
         />
-      </Drawer>
+        <SideBarItem
+          title="Banned"
+          extra={
+            <Badge
+              count="0"
+              color="#ECECEC"
+              style={{
+                color: '#5E5E5E',
+                fontSize: 11,
+                fontWeight: 400,
+              }}
+            />
+          }
+        />
+        <SideBarItem
+          title="Muted"
+          extra={
+            <Badge
+              count="0"
+              color="#ECECEC"
+              style={{
+                color: '#5E5E5E',
+                fontSize: 11,
+                fontWeight: 400,
+              }}
+            />
+          }
+        />
+      </div>
+      <ChannelMembersDrawer
+        open={membersDrawerOpen}
+        onOpen={setMembersDrawerOpen}
+        getContainer={sideBarRef.current}
+      />
     </ChannelInfoRightSideBar>
   );
 };
+
+export default observer(ChannelInfoSideBar);

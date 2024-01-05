@@ -29,6 +29,7 @@
     "react": "^18.2.0",
     "react-detect-click-outside": "^1.1.7",
     "react-dom": "^18.2.0",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
     "recharts": "^2.10.3",
@@ -46,7 +47,8 @@
     "eject": "react-scripts eject",
     "lint": "npx eslint src --ext .js,.jsx,.ts,.tsx --fix && prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "eslint:check": "npx eslint src --ext .js,.jsx,.ts,.tsx",
-    "prettier:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+    "prettier:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "postinstall": "npm link @wingflo/js-sdk"
   },
   "browserslist": {
     "production": [

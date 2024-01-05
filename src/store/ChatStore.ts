@@ -7,6 +7,9 @@ import {
   Attachment,
   Channel as WFChannel,
   ChannelListRes as WFChannelListRes,
+  ChannelMember,
+  MemberListQuery,
+  MemberListQueryOrder,
   Message,
   MessageCollection,
   WingFloClient,
@@ -46,6 +49,12 @@ class ChatStore {
   wingFloClient?: WingFloClient;
 
   deleteMessageState: AsyncOpState = 'done';
+
+  channelMembers: ChannelMember[] = [];
+  channelMemberListQuery?: MemberListQuery;
+  channelMemberListQueryOrder: MemberListQueryOrder =
+    'MEMBER_NICKNAME_ALPHABETICAL';
+  channelMembersState: AsyncOpState = 'done';
 
   constructor() {
     makeAutoObservable(this, {
@@ -243,8 +252,9 @@ class ChatStore {
     this.sendMessageState = 'done';
   }
 
-  selectChannel(channel: ChannelListRes) {
+  *selectChannel(channel: ChannelListRes) {
     this.selectedChannel = channel;
+    yield;
   }
 
   *selectChatMessage(selectedMessage?: MessageType) {
@@ -479,6 +489,52 @@ class ChatStore {
       }
     }
     return map;
+  }
+
+  *listChannelMembers() {
+    if (this.wingFloClient == null || this.chatChannel == null) {
+      console.warn('wingflo client or chat channel is not initialized');
+      return;
+    }
+    this.channelMembersState = 'pending';
+    const query = this.chatChannel.createMemberListQuery({
+      limit: 100,
+      order: this.channelMemberListQueryOrder,
+    });
+    this.channelMemberListQuery = query;
+
+    this.channelMembers = yield query.next();
+    this.channelMembersState = 'done';
+  }
+
+  *loadMoreChannelMembers() {
+    if (
+      this.wingFloClient == null ||
+      this.chatChannel == null ||
+      this.channelMemberListQuery == null
+    ) {
+      console.warn(
+        'wingflo client or chat channel or query is not initialized',
+      );
+      return;
+    }
+    this.channelMembersState = 'pending';
+
+    this.channelMembers = yield this.channelMemberListQuery?.next();
+    this.channelMembersState = 'done';
+  }
+
+  *changeChannelMemberListOrder(order: MemberListQueryOrder) {
+    this.channelMemberListQueryOrder = order;
+    yield this.listChannelMembers();
+  }
+
+  get channelOperators() {
+    return this.channelMembers.filter((m) => m.isOperator);
+  }
+
+  get channelNormalMembers() {
+    return this.channelMembers.filter((m) => !m.isOperator);
   }
 }
 
